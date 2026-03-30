@@ -190,7 +190,7 @@ select.filter-select:focus{border-color:var(--accent);}
 /* HOSPITAL ROWS */
 .hosp-grid{
   display:grid;
-  grid-template-columns:200px 1fr 100px;
+  grid-template-columns:180px minmax(260px, 1fr) 110px;
   align-items:center;
   padding:16px 20px;
   border-bottom:1px solid var(--border);
@@ -203,8 +203,8 @@ select.filter-select:focus{border-color:var(--accent);}
 .hosp-code{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:2px;}
 
 /* SPARKLINE CHART */
-.chart-wrap{position:relative;min-height:90px;display:flex;align-items:center;}
-.sparkline-svg{width:100%;height:90px;overflow:visible;display:block;}
+.chart-wrap{position:relative;height:160px;display:flex;align-items:stretch;width:100%;}
+.sparkline-svg{width:100%;height:100%;display:block;overflow:visible;}
 
 .hosp-result{text-align:right;}
 .result-pct{
@@ -245,6 +245,73 @@ select.filter-select:focus{border-color:var(--accent);}
 }
 .tag-critica{background:#2a0d0f;color:var(--rojo);border:1px solid #4a1215;}
 .tag-alta{background:#0d2010;color:var(--verde);border:1px solid #1a4020;}
+
+
+/* COMPARADOR */
+.delta-badge{
+  display:inline-flex;align-items:center;gap:2px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;
+  padding:2px 6px;border-radius:3px;
+}
+.delta-mejor{background:rgba(0,217,126,.12);color:var(--verde);}
+.delta-peor{background:rgba(255,71,87,.12);color:var(--rojo);}
+.delta-igual{background:rgba(122,138,168,.1);color:var(--text-muted);}
+
+/* Barra doble inline */
+.dual-bar-wrap{display:flex;flex-direction:column;gap:4px;width:100%;}
+.dual-bar-row{display:flex;align-items:center;gap:6px;}
+.dual-bar-tag{
+  font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-dim);
+  width:22px;text-align:right;flex-shrink:0;
+}
+.dual-bar-track{
+  flex:1;height:7px;background:var(--surface3);border-radius:3px;overflow:hidden;
+}
+.dual-bar-fill{height:100%;border-radius:3px;transition:width .45s ease;}
+.dual-bar-fill.verde{background:var(--verde);}
+.dual-bar-fill.amarillo{background:var(--amarillo);}
+.dual-bar-fill.rojo{background:var(--rojo);}
+.dual-bar-fill.ref{background:var(--border2);}
+.dual-bar-val{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  width:36px;flex-shrink:0;text-align:left;
+}
+.dual-bar-val.act{color:var(--text);}
+.dual-bar-val.ref{color:var(--text-dim);}
+
+/* COMP HEADER BAR inside card */
+.comp-header-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 20px;
+  background:rgba(74,58,16,.12);
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border);
+}
+.comp-header-bar.hidden{display:none;}
+.comp-label{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--amarillo);text-transform:uppercase;letter-spacing:.08em;
+}
+.comp-sel{
+  background:var(--surface2);border:1px solid var(--border2);color:var(--text);
+  padding:3px 8px;border-radius:4px;font-size:11px;font-family:'Mulish',sans-serif;
+  outline:none;cursor:pointer;
+}
+.comp-toggle{
+  margin-left:auto;background:transparent;border:1px solid var(--border2);
+  color:var(--text-muted);padding:3px 10px;border-radius:4px;
+  font-size:11px;cursor:pointer;font-family:'Mulish',sans-serif;transition:.15s;
+}
+.comp-toggle:hover{border-color:var(--amarillo);color:var(--amarillo);}
+.comp-toggle.active{background:rgba(245,197,24,.1);border-color:var(--amarillo);color:var(--amarillo);}
+
+/* hosp-grid comp mode adds a column */
+.hosp-grid.comp-mode{
+  grid-template-columns:180px minmax(200px,1fr) 180px 110px;
+}
+.total-row.comp-mode{
+  grid-template-columns:180px 1fr 160px 80px;
+}
 
 /* EMPTY STATE */
 .empty-state{
@@ -289,7 +356,7 @@ select.filter-select:focus{border-color:var(--accent);}
 /* NO DATA */
 .total-row{
   display:grid;
-  grid-template-columns:200px 1fr 100px;
+  grid-template-columns:180px minmax(260px, 1fr) 110px;
   align-items:center;
   padding:14px 20px;
   border-bottom:1px solid var(--border2);
@@ -498,6 +565,166 @@ const DATA = {
     }
   }
 };
+
+// ═══════════════════════════════════════════
+// COMPARADOR STATE
+// ═══════════════════════════════════════════
+let compState = {
+  active: {},
+  refDesde: null,   // period key string
+  refHasta: null,   // period key string
+};
+
+function toggleComparador(indKey) {
+  compState.active[indKey] = !compState.active[indKey];
+  var card = document.getElementById('card-' + indKey);
+  if (card) card.classList.add('open');
+  var btn = document.getElementById('comp-btn-' + indKey);
+  if (btn) btn.classList.toggle('active', !!compState.active[indKey]);
+  var hospRows = _lastHospRows[indKey] || [];
+  if (hospRows.length === 0) { render(); return; }
+  _refreshCompView(indKey, hospRows);
+}
+
+function _refreshCompView(indKey, hospRows) {
+  var card = document.getElementById('card-' + indKey);
+  if (!card) return;
+  var body = card.querySelector('.ind-card-body');
+  if (!body) return;
+  var isComp = !!compState.active[indKey];
+  var indDef = INDICADORES_DEF[indKey];
+
+  // Update comp header bar
+  var existingHeader = body.querySelector('.comp-header-bar');
+  if (isComp && !existingHeader) {
+    // Insert comp header before first hosp-grid
+    var firstRow = body.querySelector('.hosp-grid');
+    if (firstRow) {
+      var hdr = document.createElement('div');
+      hdr.innerHTML = buildCompHeader(indKey, indDef);
+      body.insertBefore(hdr.firstChild, firstRow);
+    }
+  } else if (!isComp && existingHeader) {
+    existingHeader.remove();
+  } else if (isComp && existingHeader) {
+    existingHeader.outerHTML = buildCompHeader(indKey, indDef);
+  }
+
+  // Compute ref data
+  var refPs = isComp ? getRefPeriodos() : [];
+  var scaleMax = indDef.meta * 1.5;
+  if (isComp) {
+    hospRows.forEach(function(r) {
+      if (r.ag.pct && r.ag.pct > scaleMax) scaleMax = r.ag.pct * 1.1;
+      refPs.forEach(function(rp) {
+        var rv = (((DATA[rp.año]||{})[rp.mes]||{})[indKey]||{})[r.cod];
+        if (rv && rv.den>0) { var p2=rv.num/rv.den*100; if (p2>scaleMax) scaleMax=p2*1.1; }
+      });
+    });
+  }
+
+  // Update each hosp row in place
+  var rows = body.querySelectorAll('.hosp-grid');
+  rows.forEach(function(rowEl, i) {
+    var r = hospRows[i];
+    if (!r) return;
+
+    // Toggle comp-mode class
+    rowEl.classList.toggle('comp-mode', isComp);
+
+    // Remove existing comp-col if present
+    var existing = rowEl.querySelector('.comp-col-inline');
+    if (existing) existing.remove();
+
+    if (isComp) {
+      var refN=0, refD=0;
+      refPs.forEach(function(rp) {
+        var rv=(((DATA[rp.año]||{})[rp.mes]||{})[indKey]||{})[r.cod];
+        if (rv){refN+=rv.num;refD+=rv.den;}
+      });
+      var refPct = refD>0 ? refN/refD*100 : null;
+      var actPct = r.ag.pct;
+      var delta = (actPct!==null && refPct!==null) ? actPct-refPct : null;
+      var better = delta!==null && (indDef.invert ? delta<0 : delta>0);
+      var worse  = delta!==null && (indDef.invert ? delta>0 : delta<0);
+      var dClass = delta===null?'delta-igual':better?'delta-mejor':'delta-peor';
+      var arrow  = delta===null?'—':delta>0?'↑':delta<0?'↓':'→';
+      var dStr   = delta!==null ? arrow+' '+Math.abs(delta).toFixed(1)+'%' : 'S/D';
+      var actW   = actPct!==null ? Math.min(actPct/scaleMax*100,100).toFixed(1) : 0;
+      var refW   = refPct!==null ? Math.min(refPct/scaleMax*100,100).toFixed(1) : 0;
+      var col = document.createElement('div');
+      col.className = 'comp-col-inline';
+      col.style.cssText = 'padding:2px 0;';
+      col.innerHTML = '<div class="dual-bar-wrap">'
+        + '<div class="dual-bar-row">'
+        +   '<span class="dual-bar-tag">Act</span>'
+        +   '<div class="dual-bar-track"><div class="dual-bar-fill '+r.s+'" style="width:'+actW+'%"></div></div>'
+        +   '<span class="dual-bar-val act">'+fmtPct(actPct)+'</span>'
+        + '</div>'
+        + '<div class="dual-bar-row">'
+        +   '<span class="dual-bar-tag">Ref</span>'
+        +   '<div class="dual-bar-track"><div class="dual-bar-fill ref" style="width:'+refW+'%"></div></div>'
+        +   '<span class="dual-bar-val ref">'+fmtPct(refPct)+'</span>'
+        + '</div>'
+        + '<div style="margin-top:2px;text-align:center;"><span class="delta-badge '+dClass+'">'+dStr+'</span></div>'
+        + '</div>';
+      // Insert before the result div
+      var resultDiv = rowEl.querySelector('.hosp-result');
+      rowEl.insertBefore(col, resultDiv);
+    }
+  });
+
+  // Remove the stale comp-area div (no longer needed)
+  var areaDiv = body.querySelector('#comp-area-' + indKey);
+  if (areaDiv) areaDiv.innerHTML = '';
+}
+
+function setRefDesde(key) {
+  compState.refDesde = key;
+  // ensure refHasta >= refDesde
+  if (compState.refHasta && compState.refHasta < compState.refDesde) {
+    compState.refHasta = compState.refDesde;
+  }
+  renderAllCompAreas();
+}
+
+function setRefHasta(key) {
+  compState.refHasta = key;
+  // ensure refDesde <= refHasta
+  if (compState.refDesde && compState.refDesde > compState.refHasta) {
+    compState.refDesde = compState.refHasta;
+  }
+  renderAllCompAreas();
+}
+
+function renderAllCompAreas() {
+  Object.keys(INDICADORES_DEF).forEach(function(indKey) {
+    if (!compState.active[indKey]) return;
+    var hospRows = _lastHospRows[indKey] || [];
+    if (hospRows.length === 0) return;
+    _refreshCompView(indKey, hospRows);
+  });
+}
+
+var _lastHospRows = {};
+
+function getRefPeriodos() {
+  const allP = getAllPeriodos();
+  // Default ref: period just before first active
+  var defaultRef = null;
+  var firstActive = filtros.periodos[0];
+  var idx = allP.findIndex(function(p){ return getPeriodoKey(p) === getPeriodoKey(firstActive); });
+  if (idx > 0) defaultRef = getPeriodoKey(allP[idx - 1]);
+
+  var desde = compState.refDesde || defaultRef || getPeriodoKey(allP[0]);
+  var hasta  = compState.refHasta || defaultRef || desde;
+  if (hasta < desde) hasta = desde;
+
+  return allP.filter(function(p) {
+    var k = getPeriodoKey(p);
+    return k >= desde && k <= hasta;
+  });
+}
 
 // ═══════════════════════════════════════════
 // ESTADO DE FILTROS
@@ -718,10 +945,10 @@ function renderSummary() {
 // SPARKLINE SVG
 // ═══════════════════════════════════════════
 function buildSparkline(serie, indKey, meta, invert) {
-  const W = 400, H = 80;
+  const W = 500, H = 140;
   const vals = serie.map(s => s.valor);
   const hasData = vals.some(v => v !== null);
-  if (!hasData) return `<svg class="sparkline-svg" viewBox="0 0 ${W} ${H}"></svg>`;
+  if (!hasData) return `<svg class="sparkline-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"></svg>`;
 
   const nonNull = vals.filter(v => v !== null);
   const minV = Math.min(...nonNull, invert ? 0 : meta * 0.5);
@@ -750,7 +977,7 @@ function buildSparkline(serie, indKey, meta, invert) {
     const y = toY(s.valor);
     const ds = semaforo(s.valor, indKey);
     const dc = ds === 'verde' ? 'var(--verde)' : ds === 'amarillo' ? 'var(--amarillo)' : 'var(--rojo)';
-    return `<circle cx="${x}" cy="${y}" r="3" fill="${dc}" stroke="var(--bg)" stroke-width="1.5">
+    return `<circle cx="${x}" cy="${y}" r="3.5" fill="${dc}" stroke="var(--surface)" stroke-width="1.5">
       <title>${s.label}: ${fmtPct(s.valor)}</title>
     </circle>`;
   }).join('');
@@ -759,19 +986,166 @@ function buildSparkline(serie, indKey, meta, invert) {
   const labels = serie.map((s, i) => {
     const x = pad + i * xStep;
     const shortLabel = s.label.split(' ')[0];
-    return `<text x="${x}" y="${H}" font-size="8" text-anchor="middle" fill="var(--text-dim)" font-family="JetBrains Mono">${shortLabel}</text>`;
+    return `<text x="${x}" y="${H}" font-size="8" text-anchor="middle" fill="#c8d6e8" font-family="JetBrains Mono" font-weight="500">${shortLabel}</text>`;
   }).join('');
 
-  return `<svg class="sparkline-svg" viewBox="0 0 ${W} ${H+10}" preserveAspectRatio="none">
+  return `<svg class="sparkline-svg" viewBox="0 0 ${W} ${H+18}" preserveAspectRatio="none">
     <line x1="${pad}" y1="${metaY}" x2="${W-pad}" y2="${metaY}"
-      stroke="var(--text-dim)" stroke-width="1" stroke-dasharray="3,3"/>
+      stroke="#4a5a70" stroke-width="1" stroke-dasharray="3,3"/>
     <text x="${W-pad}" y="${metaY-2}" font-size="8" text-anchor="end"
-      fill="var(--text-dim)" font-family="JetBrains Mono">${meta}%</text>
-    ${pts.length > 1 ? `<polyline points="${pts.join(' ')}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
+      fill="#c8d6e8" font-family="JetBrains Mono" font-weight="500">${meta}%</text>
+    ${pts.length > 1 ? `<polyline points="${pts.join(' ')}" fill="none" stroke="${lineColor}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
     ${dots}
     ${labels}
   </svg>`;
 }
+
+
+// ═══════════════════════════════════════════
+// BUILD COMPARADOR AREA (separate so it can re-render without collapsing)
+// ═══════════════════════════════════════════
+
+// ═══════════════════════════════════════════
+// BUILD COMPARADOR AREA (separate so it can re-render without collapsing)
+// ═══════════════════════════════════════════
+function buildCompArea(indKey, hospRows, indDef) {
+  const refPs = getRefPeriodos();
+  const allP = getAllPeriodos();
+  const isComp = !!compState.active[indKey];
+  if (!isComp) return '';
+
+  const actLabel = filtros.periodos.length === 1 ? periodLabel(filtros.periodos[0]) : filtros.periodos.length + ' meses';
+  const refLabel = refPs.length > 0 ? refPs.map(function(p){return periodLabel(p);}).join(' – ') : '—';
+
+  // Desde/Hasta selectors
+  var defaultRef = null;
+  var firstActive = filtros.periodos[0];
+  var allPAll = getAllPeriodos();
+  var idxDef = allPAll.findIndex(function(p){ return getPeriodoKey(p) === getPeriodoKey(firstActive); });
+  if (idxDef > 0) defaultRef = getPeriodoKey(allPAll[idxDef - 1]);
+  var curDesde = compState.refDesde || defaultRef || getPeriodoKey(allPAll[0]);
+  var curHasta = compState.refHasta || defaultRef || curDesde;
+
+  var optsDesde = allP.map(function(p) {
+    var k = getPeriodoKey(p);
+    return '<option value="' + k + '"' + (k === curDesde ? ' selected' : '') + '>' + periodLabel(p) + '</option>';
+  }).join('');
+  var optsHasta = allP.map(function(p) {
+    var k = getPeriodoKey(p);
+    return '<option value="' + k + '"' + (k === curHasta ? ' selected' : '') + '>' + periodLabel(p) + '</option>';
+  }).join('');
+
+  var out = '<div class="comp-header-bar" style="flex-wrap:wrap;gap:8px;">'    + '<span class="comp-label">&#x21c4; Período de referencia</span>'    + '<div style="display:flex;align-items:center;gap:6px;">'    +   '<span style="font-size:10px;color:var(--text-muted);">Desde</span>'    +   '<select class="comp-sel" onchange="setRefDesde(this.value)">' + optsDesde + '</select>'    +   '<span style="font-size:10px;color:var(--text-muted);">Hasta</span>'    +   '<select class="comp-sel" onchange="setRefHasta(this.value)">' + optsHasta + '</select>'    + '</div>'    + '<span style="font-size:10px;color:var(--text-dim);margin-left:auto;">' + actLabel + ' vs ' + refLabel + '</span>'    + '</div>';
+
+  // Compute scale max
+  var scaleMax = indDef.meta * 1.5;
+  hospRows.forEach(function(r) {
+    if (r.ag.pct && r.ag.pct > scaleMax) scaleMax = r.ag.pct * 1.1;
+    refPs.forEach(function(rp) {
+      var rv = ((DATA[rp.año] || {})[rp.mes] || {})[indKey] || {};
+      var rvd = rv[r.cod];
+      if (rvd && rvd.den > 0) {
+        var rp2 = rvd.num / rvd.den * 100;
+        if (rp2 > scaleMax) scaleMax = rp2 * 1.1;
+      }
+    });
+  });
+
+  // Hospital rows with comparador column
+  hospRows.forEach(function(r) {
+    // Ref values for sparkline lines
+    var refVals = refPs.map(function(rp) {
+      var rv = ((DATA[rp.año] || {})[rp.mes] || {})[indKey] || {};
+      var rvd = rv[r.cod];
+      return (rvd && rvd.den > 0) ? rvd.num / rvd.den * 100 : null;
+    });
+
+    var spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert);
+
+    // Delta vs aggregated ref
+    var refTotalN = 0, refTotalD = 0;
+    refPs.forEach(function(rp) {
+      var rv = ((DATA[rp.año] || {})[rp.mes] || {})[indKey] || {};
+      var rvd = rv[r.cod];
+      if (rvd) { refTotalN += rvd.num; refTotalD += rvd.den; }
+    });
+    var refPct = refTotalD > 0 ? refTotalN / refTotalD * 100 : null;
+    var actPct = r.ag.pct;
+    var delta = (actPct !== null && refPct !== null) ? actPct - refPct : null;
+    var isBetter = delta !== null && (indDef.invert ? delta < 0 : delta > 0);
+    var isWorse  = delta !== null && (indDef.invert ? delta > 0 : delta < 0);
+    var dClass = delta === null ? 'delta-igual' : isBetter ? 'delta-mejor' : 'delta-peor';
+    var arrow = delta === null ? '—' : delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
+    var dStr = delta !== null ? arrow + ' ' + Math.abs(delta).toFixed(1) + '%' : 'S/D';
+    var actW = actPct !== null ? Math.min(actPct / scaleMax * 100, 100).toFixed(1) : 0;
+    var refW = refPct !== null ? Math.min(refPct / scaleMax * 100, 100).toFixed(1) : 0;
+
+    var compCol = '<div class="dual-bar-wrap">'
+      + '<div class="dual-bar-row">'
+      +   '<span class="dual-bar-tag">Act</span>'
+      +   '<div class="dual-bar-track"><div class="dual-bar-fill ' + r.s + '" style="width:' + actW + '%"></div></div>'
+      +   '<span class="dual-bar-val act">' + fmtPct(actPct) + '</span>'
+      + '</div>'
+      + '<div class="dual-bar-row">'
+      +   '<span class="dual-bar-tag">Ref</span>'
+      +   '<div class="dual-bar-track"><div class="dual-bar-fill ref" style="width:' + refW + '%"></div></div>'
+      +   '<span class="dual-bar-val ref">' + fmtPct(refPct) + '</span>'
+      + '</div>'
+      + '<div style="margin-top:3px;text-align:center;">'
+      +   '<span class="delta-badge ' + dClass + '">' + dStr + '</span>'
+      + '</div>'
+      + '</div>';
+
+    out += '<div class="hosp-grid comp-mode">'
+      + '<div class="hosp-name-cell">' + r.hosp.nombre + '</div>'
+      + '<div class="chart-wrap">' + spark + '</div>'
+      + '<div style="padding:4px 0;">' + compCol + '</div>'
+      + '<div class="hosp-result">'
+      +   '<div class="result-pct ' + r.s + '">' + fmtPct(r.ag.pct) + '</div>'
+      +   '<div class="result-numden">' + r.ag.num + ' / ' + r.ag.den + '</div>'
+      +   '<div class="result-sem"><div class="sem-badge ' + r.s + '"></div></div>'
+      + '</div>'
+      + '</div>';
+  });
+
+  return out;
+}
+
+// ═══════════════════════════════════════════
+// BUILD HOSPITAL ROWS HTML
+// ═══════════════════════════════════════════
+function buildHospRows(indKey, hospRows, indDef) {
+  _lastHospRows[indKey] = hospRows;
+  var isComp = false;  // comp is now handled by _refreshCompView inline
+
+  var out = '';
+  hospRows.forEach(function(r) {
+    var spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert);
+    var pctLabel = filtros.periodos.length > 1
+      ? '<div style="font-size:9px;color:var(--text-dim);margin-top:2px;">Acumulado ' + filtros.periodos.length + ' meses</div>'
+      : '';
+    out += '<div class="hosp-grid">'
+      + '<div class="hosp-name-cell">' + r.hosp.nombre + '</div>'
+      + '<div class="chart-wrap">' + spark + '</div>'
+      + '<div class="hosp-result">'
+      +   '<div class="result-pct ' + r.s + '">' + fmtPct(r.ag.pct) + '</div>'
+      +   '<div class="result-numden">' + r.ag.num + ' / ' + r.ag.den + '</div>'
+      +   pctLabel
+      +   '<div class="result-sem"><div class="sem-badge ' + r.s + '"></div></div>'
+      + '</div>'
+      + '</div>';
+  });
+
+  // Comparador area (separate div, re-renderable)
+  if (isComp) {
+    out += '<div id="comp-area-' + indKey + '">' + buildCompArea(indKey, hospRows, indDef) + '</div>';
+  } else {
+    out += '<div id="comp-area-' + indKey + '"></div>';
+  }
+
+  return out;
+}
+
 
 // ═══════════════════════════════════════════
 // RENDER INDICADORES
@@ -852,45 +1226,29 @@ function render() {
             </div>
             <div class="instrumento-badges">${(indDef.instrumentos||[]).map(i => {
               const cls = i==='COMGES'?'inst-comges':i==='BSC'?'inst-bsc':'inst-glosa';
-              return `<span class="inst-badge ${cls}">${i}</span>`;
+              return '<span class="inst-badge ' + cls + '">' + i + '</span>';
             }).join('')}</div>
           </div>
           <div class="ind-semaforos">${semPills}</div>
+          <button class="comp-toggle ${compState.active[indKey]?'active':''}"
+            id="comp-btn-${indKey}"
+            onclick="event.stopPropagation();toggleComparador('${indKey}')"
+            title="Comparar con período anterior">⇄ Comparar</button>
           <span class="chevron">▾</span>
         </div>
       </div>
       <div class="ind-card-body">
-        <div class="total-row">
+        <div class="total-row ${compState.active[indKey]?'comp-mode':''}">
           <div class="total-name">▸ Total Servicio de Salud</div>
           <div class="chart-wrap"></div>
+          ${compState.active[indKey] ? '<div></div>' : ''}
           <div class="total-result">
             <div class="total-pct ${totalSem}">${fmtPct(totalPct)}</div>
             <div class="total-numden">${totalNum} / ${totalDen}</div>
             <div style="font-size:9px;color:var(--text-dim);margin-top:3px;">${filtros.periodos.length > 1 ? 'Acumulado '+filtros.periodos.length+' meses' : periodLabel(filtros.periodos[0])||''}</div>
           </div>
         </div>
-        ${hospRows.map(r => {
-          const spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert);
-          const pctLabel = filtros.periodos.length > 1
-            ? `<div style="font-size:9px;color:var(--text-dim);margin-top:2px;">Acumulado ${filtros.periodos.length} meses</div>`
-            : '';
-          return `
-          <div class="hosp-grid">
-            <div class="hosp-name-cell">
-              ${r.hosp.nombre}
-
-            </div>
-            <div class="chart-wrap">${spark}</div>
-            <div class="hosp-result">
-              <div class="result-pct ${r.s}">${fmtPct(r.ag.pct)}</div>
-              <div class="result-numden">${r.ag.num} / ${r.ag.den}</div>
-              ${pctLabel}
-              <div class="result-sem">
-                <div class="sem-badge ${r.s}"></div>
-              </div>
-            </div>
-          </div>`;
-        }).join('')}
+        ${buildHospRows(indKey, hospRows, indDef)}
       </div>`;
 
     container.appendChild(card);
