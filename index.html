@@ -577,107 +577,38 @@ let compState = {
 
 function toggleComparador(indKey) {
   compState.active[indKey] = !compState.active[indKey];
-  var card = document.getElementById('card-' + indKey);
-  if (card) card.classList.add('open');
   var btn = document.getElementById('comp-btn-' + indKey);
   if (btn) btn.classList.toggle('active', !!compState.active[indKey]);
-  var hospRows = _lastHospRows[indKey] || [];
-  if (hospRows.length === 0) { render(); return; }
-  _refreshCompView(indKey, hospRows);
+  _rebuildCardBody(indKey);
 }
 
-function _refreshCompView(indKey, hospRows) {
+function _rebuildCardBody(indKey) {
   var card = document.getElementById('card-' + indKey);
   if (!card) return;
+  // Keep card open
+  card.classList.add('open');
+
+  var hospRows = _lastHospRows[indKey];
+  if (!hospRows || hospRows.length === 0) { render(); return; }
+
+  var indDef = INDICADORES_DEF[indKey];
+  var isComp = !!compState.active[indKey];
   var body = card.querySelector('.ind-card-body');
   if (!body) return;
-  var isComp = !!compState.active[indKey];
-  var indDef = INDICADORES_DEF[indKey];
 
-  // Update comp header bar
-  var existingHeader = body.querySelector('.comp-header-bar');
-  if (isComp && !existingHeader) {
-    // Insert comp header before first hosp-grid
-    var firstRow = body.querySelector('.hosp-grid');
-    if (firstRow) {
-      var hdr = document.createElement('div');
-      hdr.innerHTML = buildCompHeader(indKey, indDef);
-      body.insertBefore(hdr.firstChild, firstRow);
-    }
-  } else if (!isComp && existingHeader) {
-    existingHeader.remove();
-  } else if (isComp && existingHeader) {
-    existingHeader.outerHTML = buildCompHeader(indKey, indDef);
-  }
+  // Preserve total-row
+  var totalRow = body.querySelector('.total-row');
+  var totalHTML = totalRow ? totalRow.outerHTML : '';
 
-  // Compute ref data
-  var refPs = isComp ? getRefPeriodos() : [];
-  var scaleMax = indDef.meta * 1.5;
   if (isComp) {
-    hospRows.forEach(function(r) {
-      if (r.ag.pct && r.ag.pct > scaleMax) scaleMax = r.ag.pct * 1.1;
-      refPs.forEach(function(rp) {
-        var rv = (((DATA[rp.año]||{})[rp.mes]||{})[indKey]||{})[r.cod];
-        if (rv && rv.den>0) { var p2=rv.num/rv.den*100; if (p2>scaleMax) scaleMax=p2*1.1; }
-      });
-    });
+    // Build comp header + comp rows via buildCompArea
+    body.innerHTML = totalHTML + buildCompArea(indKey, hospRows, indDef);
+  } else {
+    // Restore normal rows
+    body.innerHTML = totalHTML + buildHospRows(indKey, hospRows, indDef);
   }
-
-  // Update each hosp row in place
-  var rows = body.querySelectorAll('.hosp-grid');
-  rows.forEach(function(rowEl, i) {
-    var r = hospRows[i];
-    if (!r) return;
-
-    // Toggle comp-mode class
-    rowEl.classList.toggle('comp-mode', isComp);
-
-    // Remove existing comp-col if present
-    var existing = rowEl.querySelector('.comp-col-inline');
-    if (existing) existing.remove();
-
-    if (isComp) {
-      var refN=0, refD=0;
-      refPs.forEach(function(rp) {
-        var rv=(((DATA[rp.año]||{})[rp.mes]||{})[indKey]||{})[r.cod];
-        if (rv){refN+=rv.num;refD+=rv.den;}
-      });
-      var refPct = refD>0 ? refN/refD*100 : null;
-      var actPct = r.ag.pct;
-      var delta = (actPct!==null && refPct!==null) ? actPct-refPct : null;
-      var better = delta!==null && (indDef.invert ? delta<0 : delta>0);
-      var worse  = delta!==null && (indDef.invert ? delta>0 : delta<0);
-      var dClass = delta===null?'delta-igual':better?'delta-mejor':'delta-peor';
-      var arrow  = delta===null?'—':delta>0?'↑':delta<0?'↓':'→';
-      var dStr   = delta!==null ? arrow+' '+Math.abs(delta).toFixed(1)+'%' : 'S/D';
-      var actW   = actPct!==null ? Math.min(actPct/scaleMax*100,100).toFixed(1) : 0;
-      var refW   = refPct!==null ? Math.min(refPct/scaleMax*100,100).toFixed(1) : 0;
-      var col = document.createElement('div');
-      col.className = 'comp-col-inline';
-      col.style.cssText = 'padding:2px 0;';
-      col.innerHTML = '<div class="dual-bar-wrap">'
-        + '<div class="dual-bar-row">'
-        +   '<span class="dual-bar-tag">Act</span>'
-        +   '<div class="dual-bar-track"><div class="dual-bar-fill '+r.s+'" style="width:'+actW+'%"></div></div>'
-        +   '<span class="dual-bar-val act">'+fmtPct(actPct)+'</span>'
-        + '</div>'
-        + '<div class="dual-bar-row">'
-        +   '<span class="dual-bar-tag">Ref</span>'
-        +   '<div class="dual-bar-track"><div class="dual-bar-fill ref" style="width:'+refW+'%"></div></div>'
-        +   '<span class="dual-bar-val ref">'+fmtPct(refPct)+'</span>'
-        + '</div>'
-        + '<div style="margin-top:2px;text-align:center;"><span class="delta-badge '+dClass+'">'+dStr+'</span></div>'
-        + '</div>';
-      // Insert before the result div
-      var resultDiv = rowEl.querySelector('.hosp-result');
-      rowEl.insertBefore(col, resultDiv);
-    }
-  });
-
-  // Remove the stale comp-area div (no longer needed)
-  var areaDiv = body.querySelector('#comp-area-' + indKey);
-  if (areaDiv) areaDiv.innerHTML = '';
 }
+
 
 function setRefDesde(key) {
   compState.refDesde = key;
@@ -700,30 +631,37 @@ function setRefHasta(key) {
 function renderAllCompAreas() {
   Object.keys(INDICADORES_DEF).forEach(function(indKey) {
     if (!compState.active[indKey]) return;
-    var hospRows = _lastHospRows[indKey] || [];
-    if (hospRows.length === 0) return;
-    _refreshCompView(indKey, hospRows);
+    if (!_lastHospRows[indKey] || _lastHospRows[indKey].length === 0) return;
+    _rebuildCardBody(indKey);
   });
 }
+
 
 var _lastHospRows = {};
 
 function getRefPeriodos() {
-  const allP = getAllPeriodos();
-  // Default ref: period just before first active
-  var defaultRef = null;
-  var firstActive = filtros.periodos[0];
-  var idx = allP.findIndex(function(p){ return getPeriodoKey(p) === getPeriodoKey(firstActive); });
-  if (idx > 0) defaultRef = getPeriodoKey(allP[idx - 1]);
+  var allP = getAllPeriodos();
+  if (allP.length === 0) return [];
 
-  var desde = compState.refDesde || defaultRef || getPeriodoKey(allP[0]);
-  var hasta  = compState.refHasta || defaultRef || desde;
+  // Default: last period before the active selection
+  var firstActive = filtros.periodos[0];
+  var defIdx = allP.findIndex(function(p){ return getPeriodoKey(p) === getPeriodoKey(firstActive); });
+  var defaultKey = defIdx > 0 ? getPeriodoKey(allP[defIdx - 1]) : getPeriodoKey(allP[0]);
+
+  var desde = compState.refDesde || defaultKey;
+  var hasta  = compState.refHasta || defaultKey;
   if (hasta < desde) hasta = desde;
 
-  return allP.filter(function(p) {
+  var result = allP.filter(function(p) {
     var k = getPeriodoKey(p);
     return k >= desde && k <= hasta;
   });
+  // Failsafe: if nothing matched, return the default period
+  if (result.length === 0) {
+    var def = allP.find(function(p){ return getPeriodoKey(p) === defaultKey; });
+    return def ? [def] : [allP[0]];
+  }
+  return result;
 }
 
 // ═══════════════════════════════════════════
@@ -1116,15 +1054,13 @@ function buildCompArea(indKey, hospRows, indDef) {
 // ═══════════════════════════════════════════
 function buildHospRows(indKey, hospRows, indDef) {
   _lastHospRows[indKey] = hospRows;
-  var isComp = false;  // comp is now handled by _refreshCompView inline
-
   var out = '';
-  hospRows.forEach(function(r) {
+  hospRows.forEach(function(r, i) {
     var spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert);
     var pctLabel = filtros.periodos.length > 1
       ? '<div style="font-size:9px;color:var(--text-dim);margin-top:2px;">Acumulado ' + filtros.periodos.length + ' meses</div>'
       : '';
-    out += '<div class="hosp-grid">'
+    out += '<div class="hosp-grid" data-idx="' + i + '" data-ind="' + indKey + '">'
       + '<div class="hosp-name-cell">' + r.hosp.nombre + '</div>'
       + '<div class="chart-wrap">' + spark + '</div>'
       + '<div class="hosp-result">'
@@ -1135,14 +1071,6 @@ function buildHospRows(indKey, hospRows, indDef) {
       + '</div>'
       + '</div>';
   });
-
-  // Comparador area (separate div, re-renderable)
-  if (isComp) {
-    out += '<div id="comp-area-' + indKey + '">' + buildCompArea(indKey, hospRows, indDef) + '</div>';
-  } else {
-    out += '<div id="comp-area-' + indKey + '"></div>';
-  }
-
   return out;
 }
 
@@ -1316,7 +1244,103 @@ function showToast(msg, tipo) {
 // INIT
 // ═══════════════════════════════════════════
 renderSidebar();
-render();
+render();function _refreshCompView(indKey, hospRows) {
+  var card = document.getElementById('card-' + indKey);
+  if (!card) return;
+  var body = card.querySelector('.ind-card-body');
+  if (!body) return;
+  var isComp = !!compState.active[indKey];
+  var indDef = INDICADORES_DEF[indKey];
+
+  // ── 1. Comp header bar ──
+  var existingHdr = body.querySelector('.comp-header-bar');
+  if (isComp) {
+    var newHdrHTML = buildCompHeader(indKey, indDef);
+    if (!existingHdr) {
+      var tmp = document.createElement('div');
+      tmp.innerHTML = newHdrHTML;
+      // Insert after total-row
+      var totalRow = body.querySelector('.total-row');
+      var anchor = totalRow ? totalRow.nextSibling : body.firstChild;
+      body.insertBefore(tmp.firstChild, anchor);
+    } else {
+      existingHdr.outerHTML = newHdrHTML;
+    }
+  } else {
+    if (existingHdr) existingHdr.remove();
+  }
+
+  // ── 2. Ref data ──
+  var refPs = getRefPeriodos();
+
+  // ── 3. Scale max ──
+  var scaleMax = Math.max(indDef.meta * 2, 10);
+  hospRows.forEach(function(r) {
+    if (r.ag.pct > scaleMax) scaleMax = r.ag.pct * 1.15;
+    refPs.forEach(function(rp) {
+      var rv = (((DATA[rp.año]||{})[rp.mes]||{})[indKey]||{})[r.cod];
+      if (rv && rv.den > 0) {
+        var p = rv.num / rv.den * 100;
+        if (p > scaleMax) scaleMax = p * 1.15;
+      }
+    });
+  });
+
+  // ── 4. Update rows — select ONLY hosp-grid with data-ind ──
+  var rows = body.querySelectorAll('.hosp-grid[data-ind="' + indKey + '"]');
+  rows.forEach(function(rowEl) {
+    var idx2 = parseInt(rowEl.getAttribute('data-idx'), 10);
+    var r = hospRows[idx2];
+    if (!r) return;
+
+    // Remove existing comp col
+    var old = rowEl.querySelector('.comp-col-inline');
+    if (old) old.remove();
+    rowEl.classList.toggle('comp-mode', isComp);
+    if (!isComp) return;
+
+    // Aggregate ref value
+    var refN = 0, refD = 0;
+    refPs.forEach(function(rp) {
+      var rv = (((DATA[rp.año]||{})[rp.mes]||{})[indKey]||{})[r.cod];
+      if (rv) { refN += rv.num; refD += rv.den; }
+    });
+    var refPct = refD > 0 ? refN / refD * 100 : null;
+    var actPct = r.ag.pct;
+    var delta  = (actPct !== null && refPct !== null) ? actPct - refPct : null;
+    var better = delta !== null && (indDef.invert ? delta < 0 : delta > 0);
+    var dClass = delta === null ? 'delta-igual' : better ? 'delta-mejor' : 'delta-peor';
+    var arrow  = delta === null ? '—' : delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
+    var dStr   = delta !== null ? arrow + ' ' + Math.abs(delta).toFixed(1) + '%' : 'S/D';
+    var actW   = actPct !== null ? Math.min(actPct / scaleMax * 100, 100).toFixed(1) : 0;
+    var refW   = refPct !== null ? Math.min(refPct / scaleMax * 100, 100).toFixed(1) : 0;
+
+    var col = document.createElement('div');
+    col.className = 'comp-col-inline';
+    col.style.cssText = 'padding:2px 0;min-width:150px;';
+    col.innerHTML =
+      '<div class="dual-bar-wrap">'
+      + '<div class="dual-bar-row">'
+      +   '<span class="dual-bar-tag">Act</span>'
+      +   '<div class="dual-bar-track"><div class="dual-bar-fill ' + r.s + '" style="width:' + actW + '%"></div></div>'
+      +   '<span class="dual-bar-val act">' + fmtPct(actPct) + '</span>'
+      + '</div>'
+      + '<div class="dual-bar-row">'
+      +   '<span class="dual-bar-tag">Ref</span>'
+      +   '<div class="dual-bar-track"><div class="dual-bar-fill ref" style="width:' + refW + '%"></div></div>'
+      +   '<span class="dual-bar-val ref">' + fmtPct(refPct) + '</span>'
+      + '</div>'
+      + '<div style="margin-top:3px;text-align:center;">'
+      +   '<span class="delta-badge ' + dClass + '">' + dStr + '</span>'
+      + '</div>'
+      + '</div>';
+
+    var resultDiv = rowEl.querySelector('.hosp-result');
+    rowEl.insertBefore(col, resultDiv);
+  });
+}
+
+
 </script>
 </body>
 </html>
