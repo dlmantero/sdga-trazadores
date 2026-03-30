@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero Trazadores SDGA 2026 · Servicio de Salud Los Ríos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-dim: #484f58;
+    --verde: #2ea043;
+    --verde-bg: #0d2818;
+    --verde-text: #56d364;
+    --amarillo: #b08800;
+    --amarillo-bg: #272115;
+    --amarillo-text: #e3b341;
+    --rojo: #da3633;
+    --rojo-bg: #2d1011;
+    --rojo-text: #f85149;
+    --accent: #388bfd;
+    --accent2: #58a6ff;
+    --gris-mid: #21262d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(12px);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-pill {
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  .brand-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .brand-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-top: 1px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--verde-text);
+    box-shadow: 0 0 8px var(--verde-text);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .btn-config {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    transition: background .15s;
+  }
+  .btn-config:hover { background: var(--gris-mid); }
+
+  /* ── MAIN LAYOUT ── */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 32px 64px;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    margin-top: 36px;
+  }
+
+  .section-label:first-of-type { margin-top: 0; }
+
+  .section-label h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+
+  .section-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .tag-critica { background: #3a1b1b; color: var(--rojo-text); border: 1px solid #5a2020; }
+  .tag-alta { background: #1c2512; color: #7ee787; border: 1px solid #2d4015; }
+
+  /* ── INDICATOR CARD ── */
+  .indicator-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    transition: border-color .2s;
+  }
+  .indicator-card:hover { border-color: #484f58; }
+
+  .card-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .card-meta { flex: 1; }
+
+  .card-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .card-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+
+  .card-formula {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .card-meta-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .meta-target {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .meta-target span {
+    color: var(--amarillo-text);
+    font-weight: 500;
+  }
+
+  /* ── HOSPITAL GRID ── */
+  .hospitals-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+
+  .hospital-col {
+    padding: 20px 24px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .hospital-col:last-child { border-right: none; }
+
+  .hospital-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+
+  /* ── MONTHLY CHART ── */
+  .month-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 64px;
+    margin-bottom: 16px;
+  }
+
+  .month-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    gap: 4px;
+    cursor: default;
+    position: relative;
+  }
+
+  .month-bar {
+    width: 100%;
+    border-radius: 3px 3px 0 0;
+    transition: opacity .2s;
+    min-height: 2px;
+  }
+
+  .month-bar-wrap:hover .month-bar { opacity: 0.75; }
+
+  .month-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .month-value-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 3px 7px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s;
+    margin-bottom: 4px;
+    z-index: 10;
+  }
+
+  .month-bar-wrap:hover .month-value-tooltip { opacity: 1; }
+
+  /* ── SUMMARY ROW ── */
+  .summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .big-pct {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .pct-verde { color: var(--verde-text); }
+  .pct-amarillo { color: var(--amarillo-text); }
+  .pct-rojo { color: var(--rojo-text); }
+
+  .semaforo {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .semaforo-verde { background: var(--verde-text); box-shadow: 0 0 10px var(--verde-text); }
+  .semaforo-amarillo { background: var(--amarillo-text); box-shadow: 0 0 10px var(--amarillo-text); }
+  .semaforo-rojo { background: var(--rojo-text); box-shadow: 0 0 10px var(--rojo-text); }
+
+  .num-den {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ── TARGET LINE in chart ── */
+  .chart-container {
+    position: relative;
+    height: 64px;
+    margin-bottom: 16px;
+  }
+
+  .target-line {
+    position: absolute;
+    left: 0; right: 0;
+    border-top: 1px dashed #484f58;
+    z-index: 2;
+  }
+
+  .target-line-label {
+    position: absolute;
+    right: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: #484f58;
+    transform: translateY(-10px);
+    padding-right: 2px;
+  }
+
+  /* ── CONFIG MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    width: 520px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .modal h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+
+  .btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 9px 20px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+  }
+  .btn-cancel:hover { background: var(--surface2); }
+
+  /* ── ADD DATA PANEL ── */
+  .add-data-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 36px;
+  }
+
+  .add-data-section h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 4px;
+  }
+
+  .add-data-sub {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .add-form-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .add-form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .add-form-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  select.form-input {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b949e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+  }
+
+  .btn-add {
+    background: #1f2f1f;
+    border: 1px solid #2d4015;
+    color: var(--verde-text);
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+    height: 37px;
+  }
+  .btn-add:hover { background: #253525; }
+
+  /* ── SHEETS LINK ── */
+  .sheets-link-bar {
+    background: var(--verde-bg);
+    border: 1px solid #1c4230;
+    border-radius: 8px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+
+  .sheets-link-bar .link-text {
+    font-size: 13px;
+    color: var(--verde-text);
+  }
+
+  .sheets-link-bar .link-url {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .btn-link {
+    background: transparent;
+    border: 1px solid #2d4015;
+    color: var(--verde-text);
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-link:hover { background: #1a3520; }
+
+  /* ── RESUMEN GENERAL ── */
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  .summary-card-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .summary-card-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    letter-spacing: -0.03em;
+  }
+
+  .table-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .table-entry:last-child { border-bottom: none; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--verde-bg);
+    border: 1px solid var(--verde);
+    color: var(--verde-text);
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .3s ease;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 900px) {
+    .hospitals-grid { grid-template-columns: 1fr; }
+    .hospital-col { border-right: none; border-bottom: 1px solid var(--border); }
+    .hospital-col:last-child { border-bottom: none; }
+    .add-form-grid { grid-template-columns: 1fr 1fr; }
+    .summary-cards { grid-template-columns: 1fr; }
+    header { padding: 0 16px; }
+    .container { padding: 20px 16px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="brand-pill">SDGA 2026</span>
+        <span class="brand-title">Tablero Trazadores</span>
+      </div>
+      <div class="brand-sub">Servicio de Salud Los Ríos · Subdirección de Gestión Asistencial</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sync-indicator">
+      <span class="sync-dot"></span>
+      <span id="syncLabel">Última actualización: —</span>
+    </div>
+    <button class="btn-config" onclick="openModal()">⚙ Configurar fuente</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Resumen ejecutivo -->
+  <div class="summary-cards" id="summaryCards">
+    <!-- llenado por JS -->
+  </div>
+
+  <!-- EJE 3: Eficiencia Hospitalaria -->
+  <div class="section-label">
+    <h2>Eje 3 — Eficiencia Hospitalaria</h2>
+    <span class="section-tag tag-alta">ALTA</span>
+  </div>
+
+  <!-- Indicador: Suspensiones quirúrgicas -->
+  <div class="indicator-card" id="card-suspensiones">
+    <div class="card-header">
+      <div class="card-meta">
+        <div class="card-code">COMGES/BSC · Cód. 1.2 · A21 H102+I102 / F102+G102</div>
+        <div class="card-name">Suspensiones quirúrgicas en cirugías mayores electivas</div>
+        <div class="card-formula">(Cirugías suspendidas / Cirugías programadas) × 100</div>
+      </div>
+      <div class="card-meta-right">
+        <div class="meta-target">Meta 2026: <span>≤ 6.5%</span></div>
+        <span class="section-tag tag-alta" style="font-size:10px;">REM · Mensual</span>
+      </div>
+    </div>
+    <div class="hospitals-grid" id="grid-suspensiones">
+      <!-- llenado por JS -->
+    </div>
+  </div>
+
+  <!-- Sección de ingreso de datos -->
+  <div class="add-data-section">
+    <h3>Ingresar datos</h3>
+    <div class="add-data-sub">Registra manualmente los valores del mes o conecta una Google Sheet para actualización automática.</div>
+
+    <div class="add-form-grid">
+      <div class="add-form-group">
+        <label class="add-form-label">Hospital</label>
+        <select class="form-input" id="inp-hospital">
+          <option value="valdivia">Hospital Base Valdivia</option>
+          <option value="launion">Hospital La Unión</option>
+          <option value="riobueno">Hospital Río Bueno</option>
+        </select>
+      </div>
+      <div class="add-form-group">
+        <label class="add-form-label">Mes</label>
+        <select class="form-input" id="inp-mes">
+          <option value="Ene">Enero</option>
+          <option value="Feb">Febrero</option>
+          <option value="Mar">Marzo</option>
+          <option value="Abr">Abril</option>
+          <option value="May">Mayo</option>
+          <option value="Jun">Junio</option>
+          <option value="Jul">Julio</option>
+          <option value="Ago">Agosto</option>
+          <option value="Sep">Septiembre</option>
+          <option value="Oct">Octubre</option>
+          <option value="Nov">Noviembre</option>
+          <option value="Dic">Diciembre</option>
+        </select>
+      </div>
+      <div class="add-form-group">
+        <label class="add-form-label">Numerador (susp.)</label>
+        <input type="number" class="form-input" id="inp-num" placeholder="H102+I102" min="0">
+      </div>
+      <div class="add-form-group">
+        <label class="add-form-label">Denominador (prog.)</label>
+        <input type="number" class="form-input" id="inp-den" placeholder="F102+G102" min="0">
+      </div>
+      <div class="add-form-group">
+        <label class="add-form-label">Indicador</label>
+        <select class="form-input" id="inp-indicador">
+          <option value="suspensiones">Suspensiones quirúrgicas</option>
+        </select>
+      </div>
+      <button class="btn-add" onclick="addDataPoint()">+ Agregar</button>
+    </div>
+
+    <div class="sheets-link-bar" id="sheetsBar" style="display:none;">
+      <div>
+        <div class="link-text">🔗 Conectado a Google Sheets</div>
+        <div class="link-url" id="sheetsUrlDisplay">—</div>
+      </div>
+      <a class="btn-link" id="sheetsOpenLink" href="#" target="_blank">↗ Abrir Sheets</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal configuración -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h3>Configurar fuente de datos</h3>
+    <div class="modal-sub">Conecta una Google Sheet publicada como JSON para actualizar el dashboard automáticamente. La hoja debe tener la estructura de columnas: <code>hospital, mes, indicador, numerador, denominador</code></div>
+
+    <div class="form-group">
+      <label class="form-label">URL de Google Sheets (JSON publicado)</label>
+      <input type="text" class="form-input" id="sheetsUrl" placeholder="https://docs.google.com/spreadsheets/d/ID/gviz/tq?tqx=out:json">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Instrucciones para publicar</label>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:14px;font-size:12px;color:var(--text-muted);line-height:1.7;font-family:'DM Mono',monospace;">
+        1. En Google Sheets → Archivo → Compartir → Publicar en la web<br>
+        2. Selecciona la hoja de datos → Formato CSV o JSON<br>
+        3. Copia la URL y pégala arriba<br>
+        4. Para formato JSON: reemplaza /pub? por /gviz/tq?tqx=out:json&
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveConfig()">Guardar y sincronizar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+// ESTADO GLOBAL
+// ─────────────────────────────────────────
+const HOSPITALS = {
+  valdivia:  { name: 'Hospital Base Valdivia', short: 'HBV' },
+  launion:   { name: 'Hospital La Unión',       short: 'HLU' },
+  riobueno:  { name: 'Hospital Río Bueno',       short: 'HRB' },
+};
+
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+const INDICATORS = {
+  suspensiones: {
+    meta: 6.5,     // ≤ 6.5%
+    invert: true,  // menor es mejor
+  }
+};
+
+// Datos iniciales cargados desde los xlsm de Enero
+let DATA = {
+  suspensiones: {
+    valdivia:  { Ene: { num: 44, den: 664 } },
+    launion:   { Ene: { num: 13, den: 103 } },
+    riobueno:  { Ene: { num: 10, den: 27  } },
+  }
+};
+
+let sheetsUrl = localStorage.getItem('sdga_sheets_url') || '';
+
+// ─────────────────────────────────────────
+// UTILIDADES
+// ─────────────────────────────────────────
+function calcPct(num, den) {
+  if (!den || den === 0) return null;
+  return (num / den) * 100;
+}
+
+function semaforo(pct, ind) {
+  if (pct === null) return 'dim';
+  const { meta, invert } = INDICATORS[ind];
+  if (invert) {
+    if (pct <= meta) return 'verde';
+    if (pct <= meta * 1.5) return 'amarillo';
+    return 'rojo';
+  } else {
+    if (pct >= meta) return 'verde';
+    if (pct >= meta * 0.9) return 'amarillo';
+    return 'rojo';
+  }
+}
+
+function barColor(s) {
+  if (s === 'verde') return 'var(--verde-text)';
+  if (s === 'amarillo') return 'var(--amarillo-text)';
+  if (s === 'rojo') return 'var(--rojo-text)';
+  return 'var(--text-dim)';
+}
+
+function fmtPct(v) {
+  if (v === null) return '—';
+  return v.toFixed(1) + '%';
+}
+
+// ─────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────
+function render() {
+  renderSummaryCards();
+  renderSuspensionesGrid();
+  updateSyncLabel();
+}
+
+function renderSummaryCards() {
+  const totalHospitals = Object.keys(HOSPITALS).length;
+  let verde = 0, amarillo = 0, rojo = 0;
+
+  for (const [hk, hospData] of Object.entries(DATA.suspensiones)) {
+    const latestMes = getLatestMes(hospData);
+    if (!latestMes) continue;
+    const { num, den } = hospData[latestMes];
+    const pct = calcPct(num, den);
+    const s = semaforo(pct, 'suspensiones');
+    if (s === 'verde') verde++;
+    else if (s === 'amarillo') amarillo++;
+    else if (s === 'rojo') rojo++;
+  }
+
+  document.getElementById('summaryCards').innerHTML = `
+    <div class="summary-card">
+      <div class="summary-card-label">Total Establecimientos</div>
+      <div class="summary-card-value" style="color:var(--accent2)">${totalHospitals}</div>
+      <div style="margin-top:12px;">
+        ${Object.values(HOSPITALS).map(h => `
+          <div class="table-entry">
+            <span style="color:var(--text-muted)">${h.name}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-card-label">Indicadores activos</div>
+      <div class="summary-card-value" style="color:var(--verde-text)">1</div>
+      <div style="margin-top:12px;color:var(--text-muted);font-size:12px;line-height:1.8;">
+        <div>Suspensiones Quirúrgicas</div>
+        <div style="color:var(--text-dim)">+ 12 en configuración</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-card-label">Estado semáforo · último mes</div>
+      <div class="summary-card-value" style="color:var(--text-muted)">${verde + amarillo + rojo}</div>
+      <div style="margin-top:12px;">
+        <div class="table-entry">
+          <span style="color:var(--verde-text)">🟢 Cumple</span>
+          <span style="font-family:'DM Mono',monospace;">${verde}</span>
+        </div>
+        <div class="table-entry">
+          <span style="color:var(--amarillo-text)">🟡 En riesgo</span>
+          <span style="font-family:'DM Mono',monospace;">${amarillo}</span>
+        </div>
+        <div class="table-entry">
+          <span style="color:var(--rojo-text)">🔴 Incumple</span>
+          <span style="font-family:'DM Mono',monospace;">${rojo}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getLatestMes(hospData) {
+  for (let i = MESES.length - 1; i >= 0; i--) {
+    if (hospData[MESES[i]]) return MESES[i];
+  }
+  return null;
+}
+
+function renderSuspensionesGrid() {
+  const grid = document.getElementById('grid-suspensiones');
+  const meta = INDICATORS.suspensiones.meta;
+  const chartH = 56;
+
+  // Calcular max global para escala uniforme
+  let maxPct = 0;
+  for (const hospData of Object.values(DATA.suspensiones)) {
+    for (const mes of MESES) {
+      if (hospData[mes]) {
+        const p = calcPct(hospData[mes].num, hospData[mes].den);
+        if (p !== null && p > maxPct) maxPct = p;
+      }
+    }
+  }
+  const scaleMax = Math.max(maxPct * 1.2, meta * 2, 10);
+  const targetY = chartH - (meta / scaleMax * chartH);
+
+  grid.innerHTML = Object.entries(HOSPITALS).map(([hk, hosp]) => {
+    const hospData = DATA.suspensiones[hk] || {};
+    const latestMes = getLatestMes(hospData);
+    const latest = latestMes ? hospData[latestMes] : null;
+    const latestPct = latest ? calcPct(latest.num, latest.den) : null;
+    const s = semaforo(latestPct, 'suspensiones');
+
+    const bars = MESES.map(mes => {
+      const d = hospData[mes];
+      if (!d) return `
+        <div class="month-bar-wrap">
+          <div class="month-bar" style="height:2px;background:var(--border);"></div>
+          <span class="month-label">${mes}</span>
+        </div>`;
+      const pct = calcPct(d.num, d.den);
+      const ms = semaforo(pct, 'suspensiones');
+      const h = pct !== null ? Math.max((pct / scaleMax) * chartH, 2) : 2;
+      return `
+        <div class="month-bar-wrap">
+          <div class="month-value-tooltip">${fmtPct(pct)}</div>
+          <div class="month-bar" style="height:${h}px;background:${barColor(ms)};"></div>
+          <span class="month-label">${mes}</span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="hospital-col">
+        <div class="hospital-name">${hosp.name}</div>
+        <div style="position:relative;height:${chartH}px;margin-bottom:16px;">
+          <div class="target-line" style="top:${targetY}px;">
+            <span class="target-line-label">≤${meta}%</span>
+          </div>
+          <div class="month-chart" style="height:${chartH}px;margin-bottom:0;">${bars}</div>
+        </div>
+        <div class="summary-row">
+          <div>
+            <div class="big-pct pct-${s}">${fmtPct(latestPct)}</div>
+            ${latest ? `<div class="num-den">${latest.num} / ${latest.den} · ${latestMes}</div>` : '<div class="num-den">Sin datos</div>'}
+          </div>
+          <div class="semaforo semaforo-${s}"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateSyncLabel() {
+  const now = new Date();
+  document.getElementById('syncLabel').textContent =
+    `Actualizado: ${now.toLocaleDateString('es-CL')} ${now.toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'})}`;
+}
+
+// ─────────────────────────────────────────
+// INGRESO MANUAL
+// ─────────────────────────────────────────
+function addDataPoint() {
+  const hospital = document.getElementById('inp-hospital').value;
+  const mes = document.getElementById('inp-mes').value;
+  const num = parseFloat(document.getElementById('inp-num').value);
+  const den = parseFloat(document.getElementById('inp-den').value);
+  const ind = document.getElementById('inp-indicador').value;
+
+  if (isNaN(num) || isNaN(den) || den < 0) {
+    showToast('⚠ Ingresa numerador y denominador válidos', 'rojo');
+    return;
+  }
+
+  if (!DATA[ind]) DATA[ind] = {};
+  if (!DATA[ind][hospital]) DATA[ind][hospital] = {};
+  DATA[ind][hospital][mes] = { num, den };
+
+  saveLocal();
+  render();
+  showToast(`✓ Dato agregado: ${HOSPITALS[hospital].name} · ${mes}`);
+
+  document.getElementById('inp-num').value = '';
+  document.getElementById('inp-den').value = '';
+}
+
+// ─────────────────────────────────────────
+// PERSISTENCIA LOCAL
+// ─────────────────────────────────────────
+function saveLocal() {
+  localStorage.setItem('sdga_data', JSON.stringify(DATA));
+}
+
+function loadLocal() {
+  const saved = localStorage.getItem('sdga_data');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      // Merge: no sobreescribir datos base
+      for (const [ind, indData] of Object.entries(parsed)) {
+        if (!DATA[ind]) DATA[ind] = {};
+        for (const [hosp, hospData] of Object.entries(indData)) {
+          if (!DATA[ind][hosp]) DATA[ind][hosp] = {};
+          Object.assign(DATA[ind][hosp], hospData);
+        }
+      }
+    } catch(e) { console.warn('Error loading local data', e); }
+  }
+}
+
+// ─────────────────────────────────────────
+// GOOGLE SHEETS SYNC
+// ─────────────────────────────────────────
+async function fetchSheets(url) {
+  try {
+    // Para Google Sheets publicado como CSV
+    const res = await fetch(url);
+    const text = await res.text();
+
+    // Limpiar prefijo JSONP de Google Viz si existe
+    const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\((.*)\);?$/s);
+    if (jsonMatch) {
+      const json = JSON.parse(jsonMatch[1]);
+      parseVisualizationResponse(json);
+      return;
+    }
+
+    // Intento CSV simple
+    parseCSV(text);
+  } catch(e) {
+    console.error('Sheets fetch error', e);
+    showToast('⚠ No se pudo conectar a Google Sheets', 'rojo');
+  }
+}
+
+function parseCSV(text) {
+  const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/"/g, '')));
+  if (rows.length < 2) return;
+  // Headers: hospital, mes, indicador, numerador, denominador
+  for (let i = 1; i < rows.length; i++) {
+    const [hospital, mes, indicador, num, den] = rows[i];
+    if (!hospital || !mes || !indicador) continue;
+    const hk = hospitalKey(hospital);
+    if (!hk) continue;
+    if (!DATA[indicador]) DATA[indicador] = {};
+    if (!DATA[indicador][hk]) DATA[indicador][hk] = {};
+    DATA[indicador][hk][mes] = { num: parseFloat(num) || 0, den: parseFloat(den) || 0 };
+  }
+  saveLocal();
+  render();
+  showToast('✓ Datos sincronizados desde Google Sheets');
+}
+
+function parseVisualizationResponse(json) {
+  const cols = json.table.cols.map(c => c.label.toLowerCase());
+  const rows = json.table.rows;
+  for (const row of rows) {
+    const vals = row.c.map(c => c ? c.v : null);
+    const obj = {};
+    cols.forEach((c, i) => obj[c] = vals[i]);
+    const hk = hospitalKey(obj.hospital || '');
+    if (!hk || !obj.mes || !obj.indicador) continue;
+    if (!DATA[obj.indicador]) DATA[obj.indicador] = {};
+    if (!DATA[obj.indicador][hk]) DATA[obj.indicador][hk] = {};
+    DATA[obj.indicador][hk][obj.mes] = { num: parseFloat(obj.numerador) || 0, den: parseFloat(obj.denominador) || 0 };
+  }
+  saveLocal();
+  render();
+  showToast('✓ Datos sincronizados desde Google Sheets');
+}
+
+function hospitalKey(name) {
+  const n = name.toLowerCase();
+  if (n.includes('valdivia')) return 'valdivia';
+  if (n.includes('uni') || n.includes('union')) return 'launion';
+  if (n.includes('bueno')) return 'riobueno';
+  return null;
+}
+
+// ─────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────
+function openModal() {
+  document.getElementById('sheetsUrl').value = sheetsUrl;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+function saveConfig() {
+  const url = document.getElementById('sheetsUrl').value.trim();
+  sheetsUrl = url;
+  localStorage.setItem('sdga_sheets_url', url);
+  closeModal();
+  if (url) {
+    document.getElementById('sheetsBar').style.display = 'flex';
+    document.getElementById('sheetsUrlDisplay').textContent = url.length > 60 ? url.slice(0,60) + '…' : url;
+    document.getElementById('sheetsOpenLink').href = url;
+    fetchSheets(url);
+  }
+}
+
+// ─────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'rojo' ? 'var(--rojo-bg)' : 'var(--verde-bg)';
+  t.style.borderColor = type === 'rojo' ? 'var(--rojo)' : 'var(--verde)';
+  t.style.color = type === 'rojo' ? 'var(--rojo-text)' : 'var(--verde-text)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+loadLocal();
+if (sheetsUrl) {
+  document.getElementById('sheetsBar').style.display = 'flex';
+  document.getElementById('sheetsUrlDisplay').textContent = sheetsUrl.length > 60 ? sheetsUrl.slice(0,60) + '…' : sheetsUrl;
+  document.getElementById('sheetsOpenLink').href = sheetsUrl;
+  fetchSheets(sheetsUrl);
+}
+render();
+</script>
+</body>
+</html>
