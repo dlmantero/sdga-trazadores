@@ -3,776 +3,406 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tablero Trazadores SDGA 2026 · Servicio de Salud Los Ríos</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<title>Cuadro de Mando · Ejes Estratégicos SDGA · Servicio de Salud Los Ríos</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #1c2128;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-muted: #8b949e;
-    --text-dim: #484f58;
-    --verde: #2ea043;
-    --verde-bg: #0d2818;
-    --verde-text: #56d364;
-    --amarillo: #b08800;
-    --amarillo-bg: #272115;
-    --amarillo-text: #e3b341;
-    --rojo: #da3633;
-    --rojo-bg: #2d1011;
-    --rojo-text: #f85149;
-    --accent: #388bfd;
-    --accent2: #58a6ff;
-    --gris-mid: #21262d;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    min-height: 100vh;
-  }
-
-  /* ── HEADER ── */
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(13,17,23,0.92);
-    backdrop-filter: blur(12px);
-  }
-
-  .header-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .brand-pill {
-    background: var(--accent);
-    color: #fff;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 3px 9px;
-    border-radius: 20px;
-    letter-spacing: 0.04em;
-  }
-
-  .brand-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 17px;
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
-
-  .brand-sub {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 300;
-    margin-top: 1px;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .sync-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-
-  .sync-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--verde-text);
-    box-shadow: 0 0 8px var(--verde-text);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%,100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  .btn-config {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    transition: background .15s;
-  }
-  .btn-config:hover { background: var(--gris-mid); }
-
-  /* ── MAIN LAYOUT ── */
-  .container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 32px 32px 64px;
-  }
-
-  /* ── SECTION HEADER ── */
-  .section-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    margin-top: 36px;
-  }
-
-  .section-label:first-of-type { margin-top: 0; }
-
-  .section-label h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    font-weight: 400;
-    letter-spacing: -0.02em;
-  }
-
-  .section-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    padding: 3px 8px;
-    border-radius: 4px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .tag-critica { background: #3a1b1b; color: var(--rojo-text); border: 1px solid #5a2020; }
-  .tag-alta { background: #1c2512; color: #7ee787; border: 1px solid #2d4015; }
-
-  /* ── INDICATOR CARD ── */
-  .indicator-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 24px;
-    transition: border-color .2s;
-  }
-  .indicator-card:hover { border-color: #484f58; }
-
-  .card-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .card-meta { flex: 1; }
-
-  .card-code {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent2);
-    margin-bottom: 4px;
-    letter-spacing: 0.04em;
-  }
-
-  .card-name {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1.3;
-    margin-bottom: 6px;
-  }
-
-  .card-formula {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    background: var(--bg);
-    padding: 4px 10px;
-    border-radius: 4px;
-    display: inline-block;
-  }
-
-  .card-meta-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-
-  .meta-target {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-
-  .meta-target span {
-    color: var(--amarillo-text);
-    font-weight: 500;
-  }
-
-  /* ── HOSPITAL GRID ── */
-  .hospitals-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-  }
-
-  .hospital-col {
-    padding: 20px 24px;
-    border-right: 1px solid var(--border);
-    position: relative;
-  }
-  .hospital-col:last-child { border-right: none; }
-
-  .hospital-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 14px;
-  }
-
-  /* ── MONTHLY CHART ── */
-  .month-chart {
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-    height: 64px;
-    margin-bottom: 16px;
-  }
-
-  .month-bar-wrap {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    height: 100%;
-    gap: 4px;
-    cursor: default;
-    position: relative;
-  }
-
-  .month-bar {
-    width: 100%;
-    border-radius: 3px 3px 0 0;
-    transition: opacity .2s;
-    min-height: 2px;
-  }
-
-  .month-bar-wrap:hover .month-bar { opacity: 0.75; }
-
-  .month-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.04em;
-  }
-
-  .month-value-tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 3px 7px;
-    border-radius: 4px;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--text);
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .15s;
-    margin-bottom: 4px;
-    z-index: 10;
-  }
-
-  .month-bar-wrap:hover .month-value-tooltip { opacity: 1; }
-
-  /* ── SUMMARY ROW ── */
-  .summary-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .big-pct {
-    font-family: 'DM Serif Display', serif;
-    font-size: 32px;
-    letter-spacing: -0.03em;
-    line-height: 1;
-  }
-
-  .pct-verde { color: var(--verde-text); }
-  .pct-amarillo { color: var(--amarillo-text); }
-  .pct-rojo { color: var(--rojo-text); }
-
-  .semaforo {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .semaforo-verde { background: var(--verde-text); box-shadow: 0 0 10px var(--verde-text); }
-  .semaforo-amarillo { background: var(--amarillo-text); box-shadow: 0 0 10px var(--amarillo-text); }
-  .semaforo-rojo { background: var(--rojo-text); box-shadow: 0 0 10px var(--rojo-text); }
-
-  .num-den {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 4px;
-  }
-
-  /* ── TARGET LINE in chart ── */
-  .chart-container {
-    position: relative;
-    height: 64px;
-    margin-bottom: 16px;
-  }
-
-  .target-line {
-    position: absolute;
-    left: 0; right: 0;
-    border-top: 1px dashed #484f58;
-    z-index: 2;
-  }
-
-  .target-line-label {
-    position: absolute;
-    right: 0;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: #484f58;
-    transform: translateY(-10px);
-    padding-right: 2px;
-  }
-
-  /* ── CONFIG MODAL ── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px;
-    width: 520px;
-    max-width: 90vw;
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-
-  .modal h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    font-weight: 400;
-    margin-bottom: 6px;
-  }
-
-  .modal-sub {
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-bottom: 24px;
-    line-height: 1.5;
-  }
-
-  .form-group {
-    margin-bottom: 18px;
-  }
-
-  .form-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
-    margin-bottom: 6px;
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .form-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 9px 12px;
-    border-radius: 7px;
-    font-size: 13px;
-    font-family: 'DM Mono', monospace;
-    outline: none;
-    transition: border-color .15s;
-  }
-  .form-input:focus { border-color: var(--accent); }
-
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 24px;
-    justify-content: flex-end;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 9px 20px;
-    border-radius: 7px;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity .15s;
-  }
-  .btn-primary:hover { opacity: 0.85; }
-
-  .btn-cancel {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 9px 20px;
-    border-radius: 7px;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-  }
-  .btn-cancel:hover { background: var(--surface2); }
-
-  /* ── ADD DATA PANEL ── */
-  .add-data-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-top: 36px;
-  }
-
-  .add-data-section h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    font-weight: 400;
-    margin-bottom: 4px;
-  }
-
-  .add-data-sub {
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-bottom: 20px;
-  }
-
-  .add-form-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr) auto;
-    gap: 12px;
-    align-items: end;
-  }
-
-  .add-form-group { display: flex; flex-direction: column; gap: 6px; }
-
-  .add-form-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  select.form-input {
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b949e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 30px;
-  }
-
-  .btn-add {
-    background: #1f2f1f;
-    border: 1px solid #2d4015;
-    color: var(--verde-text);
-    padding: 9px 18px;
-    border-radius: 7px;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background .15s;
-    white-space: nowrap;
-    height: 37px;
-  }
-  .btn-add:hover { background: #253525; }
-
-  /* ── SHEETS LINK ── */
-  .sheets-link-bar {
-    background: var(--verde-bg);
-    border: 1px solid #1c4230;
-    border-radius: 8px;
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 16px;
-  }
-
-  .sheets-link-bar .link-text {
-    font-size: 13px;
-    color: var(--verde-text);
-  }
-
-  .sheets-link-bar .link-url {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-
-  .btn-link {
-    background: transparent;
-    border: 1px solid #2d4015;
-    color: var(--verde-text);
-    padding: 5px 12px;
-    border-radius: 5px;
-    font-size: 12px;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .btn-link:hover { background: #1a3520; }
-
-  /* ── RESUMEN GENERAL ── */
-  .summary-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 36px;
-  }
-
-  .summary-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
-  }
-
-  .summary-card-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 500;
-    margin-bottom: 8px;
-  }
-
-  .summary-card-value {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    letter-spacing: -0.03em;
-  }
-
-  .table-entry {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .table-entry:last-child { border-bottom: none; }
-
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--verde-bg);
-    border: 1px solid var(--verde);
-    color: var(--verde-text);
-    padding: 12px 18px;
-    border-radius: 8px;
-    font-size: 13px;
-    z-index: 999;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all .3s ease;
-    pointer-events: none;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-
-  @media (max-width: 900px) {
-    .hospitals-grid { grid-template-columns: 1fr; }
-    .hospital-col { border-right: none; border-bottom: 1px solid var(--border); }
-    .hospital-col:last-child { border-bottom: none; }
-    .add-form-grid { grid-template-columns: 1fr 1fr; }
-    .summary-cards { grid-template-columns: 1fr; }
-    header { padding: 0 16px; }
-    .container { padding: 20px 16px 48px; }
-  }
+:root {
+  --bg: #0a0e13;
+  --surface: #111620;
+  --surface2: #171d28;
+  --surface3: #1e2535;
+  --border: #232c3d;
+  --border2: #2d3a50;
+  --text: #e2eaf7;
+  --text-muted: #7a8aa8;
+  --text-dim: #3d4f6a;
+  --verde: #00d97e;
+  --verde-bg: #00200f;
+  --verde-dim: #004d22;
+  --amarillo: #f5c518;
+  --amarillo-bg: #211900;
+  --amarillo-dim: #4a3800;
+  --rojo: #ff4757;
+  --rojo-bg: #200008;
+  --rojo-dim: #500012;
+  --accent: #4a9eff;
+  --accent2: #7bb8ff;
+  --accent-dim: #0d2a4a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;font-size:14px;min-height:100vh;}
+
+/* HEADER */
+header{
+  background:rgba(10,14,19,0.95);border-bottom:1px solid var(--border);
+  padding:0 28px;height:58px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:200;
+  backdrop-filter:blur(16px);
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-badge{background:var(--accent);color:#fff;font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:500;padding:3px 8px;border-radius:3px;letter-spacing:.06em;}
+.brand-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;letter-spacing:-.01em;}
+.brand-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--verde);box-shadow:0 0 8px var(--verde);animation:blink 2.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.sync-txt{font-size:11px;color:var(--text-muted);}
+.btn-cfg{background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);
+  padding:6px 12px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'Mulish',sans-serif;
+  transition:.15s;}
+.btn-cfg:hover{background:var(--surface3);color:var(--text);}
+
+/* LAYOUT */
+.page{display:flex;min-height:calc(100vh - 58px);}
+
+/* SIDEBAR FILTERS */
+.sidebar{
+  width:240px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  padding:20px 16px;display:flex;flex-direction:column;gap:20px;
+  position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;
+}
+.filter-section{}
+.filter-title{
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;
+  color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:10px;
+}
+.filter-option{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;
+  cursor:pointer;transition:.15s;margin-bottom:2px;font-size:13px;
+  color:var(--text-muted);
+}
+.filter-option:hover{background:var(--surface2);color:var(--text);}
+.filter-option.active{background:var(--accent-dim);color:var(--accent2);border-left:2px solid var(--accent);}
+.filter-option input[type=checkbox]{
+  appearance:none;width:14px;height:14px;border:1px solid var(--border2);
+  border-radius:3px;flex-shrink:0;cursor:pointer;transition:.15s;
+}
+.filter-option.active input[type=checkbox]{
+  background:var(--accent);border-color:var(--accent);
+}
+.filter-option input[type=checkbox]::after{
+  content:'✓';display:block;text-align:center;font-size:10px;color:#fff;
+  line-height:14px;opacity:0;
+}
+.filter-option.active input[type=checkbox]::after{opacity:1;}
+
+.period-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.period-btn{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);
+  padding:5px 8px;border-radius:4px;font-size:11px;cursor:pointer;text-align:center;
+  transition:.15s;font-family:'Mulish',sans-serif;
+}
+.period-btn:hover{border-color:var(--border2);color:var(--text);}
+.period-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent2);}
+
+.custom-range{margin-top:8px;}
+.custom-range label{font-size:11px;color:var(--text-dim);margin-bottom:4px;display:block;}
+select.filter-select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  padding:6px 8px;border-radius:4px;font-size:12px;outline:none;cursor:pointer;
+  font-family:'Mulish',sans-serif;margin-bottom:6px;
+  appearance:none;
+}
+select.filter-select:focus{border-color:var(--accent);}
+
+.divider{height:1px;background:var(--border);margin:4px 0;}
+
+.sidebar-footer{margin-top:auto;padding-top:16px;}
+.btn-reset{
+  width:100%;background:transparent;border:1px solid var(--border2);color:var(--text-muted);
+  padding:7px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'Mulish',sans-serif;
+  transition:.15s;
+}
+.btn-reset:hover{border-color:var(--rojo);color:var(--rojo);}
+
+/* MAIN CONTENT */
+.main{flex:1;padding:24px 28px;min-width:0;}
+
+/* SUMMARY CARDS */
+.summary-strip{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:24px;
+}
+.scard{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:14px 16px;position:relative;overflow:hidden;
+}
+.scard::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.scard.verde::before{background:var(--verde);}
+.scard.amarillo::before{background:var(--amarillo);}
+.scard.rojo::before{background:var(--rojo);}
+.scard.info::before{background:var(--accent);}
+.scard-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:8px;}
+.scard-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;
+  letter-spacing:-.03em;line-height:1;}
+.scard.verde .scard-value{color:var(--verde);}
+.scard.amarillo .scard-value{color:var(--amarillo);}
+.scard.rojo .scard-value{color:var(--rojo);}
+.scard.info .scard-value{color:var(--accent2);}
+.scard-sub{font-size:11px;color:var(--text-dim);margin-top:4px;}
+
+/* INDICATOR CARDS */
+.ind-card{
+  background:var(--surface);border:1px solid #4a3a10;border-radius:10px;
+  margin-bottom:16px;overflow:hidden;transition:.2s;
+  box-shadow:0 0 0 1px rgba(245,197,24,0.08);
+}
+.ind-card-header{
+  padding:16px 20px;cursor:pointer;display:flex;align-items:center;
+  justify-content:space-between;gap:16px;transition:.15s;
+  user-select:none;
+}
+.ind-card-header:hover{background:var(--surface2);}
+.ind-card:hover{border-color:#7a6010;}
+.ind-header-left{flex:1;min-width:0;}
+.ind-code{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);
+  margin-bottom:3px;letter-spacing:.04em;}
+.ind-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;
+  color:var(--text);margin-bottom:4px;}
+.ind-formula{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);}
+.ind-header-right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.ind-meta{font-size:12px;color:var(--text-muted);}
+.ind-meta span{color:var(--amarillo);font-weight:600;}
+.ind-semaforos{display:flex;gap:6px;}
+.sm-pill{
+  display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;
+  font-size:11px;font-weight:600;
+}
+.sm-pill.verde{background:var(--verde-bg);color:var(--verde);border:1px solid var(--verde-dim);}
+.sm-pill.amarillo{background:var(--amarillo-bg);color:var(--amarillo);border:1px solid var(--amarillo-dim);}
+.sm-pill.rojo{background:var(--rojo-bg);color:var(--rojo);border:1px solid var(--rojo-dim);}
+.sm-dot{width:5px;height:5px;border-radius:50%;}
+.sm-dot.verde{background:var(--verde);}
+.sm-dot.amarillo{background:var(--amarillo);}
+.sm-dot.rojo{background:var(--rojo);}
+.chevron{color:var(--text-dim);font-size:12px;transition:transform .25s;}
+.ind-card.open .chevron{transform:rotate(180deg);}
+
+.ind-card-body{
+  display:none;border-top:1px solid var(--border);
+}
+.ind-card.open .ind-card-body{display:block;}
+
+/* HOSPITAL ROWS */
+.hosp-grid{
+  display:grid;
+  grid-template-columns:200px 1fr 100px;
+  align-items:center;
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  gap:20px;
+  transition:.15s;
+}
+.hosp-grid:last-child{border-bottom:none;}
+.hosp-grid:hover{background:var(--surface2);}
+.hosp-name-cell{font-size:13px;font-weight:500;color:var(--text);}
+.hosp-code{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:2px;}
+
+/* SPARKLINE CHART */
+.chart-wrap{position:relative;min-height:90px;display:flex;align-items:center;}
+.sparkline-svg{width:100%;height:90px;overflow:visible;display:block;}
+
+.hosp-result{text-align:right;}
+.result-pct{
+  font-family:'Syne',sans-serif;font-size:22px;font-weight:700;
+  letter-spacing:-.02em;line-height:1;
+}
+.result-pct.verde{color:var(--verde);}
+.result-pct.amarillo{color:var(--amarillo);}
+.result-pct.rojo{color:var(--rojo);}
+.result-pct.dim{color:var(--text-dim);}
+.result-numden{font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--text-dim);margin-top:3px;}
+.result-sem{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:4px;}
+.sem-badge{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.sem-badge.verde{background:var(--verde);box-shadow:0 0 8px var(--verde);}
+.sem-badge.amarillo{background:var(--amarillo);box-shadow:0 0 8px var(--amarillo);}
+.sem-badge.rojo{background:var(--rojo);box-shadow:0 0 8px var(--rojo);}
+.sem-badge.dim{background:var(--text-dim);}
+
+/* SECTION HEADER */
+.eje-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:8px;
+}
+.eje-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;letter-spacing:-.01em;}
+.instrumento-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.inst-badge{
+  font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;
+  padding:2px 7px;border-radius:3px;letter-spacing:.05em;white-space:nowrap;
+}
+.inst-comges{background:#0d2a4a;color:#7bb8ff;border:1px solid #1a4a7a;}
+.inst-bsc{background:#1a1a0a;color:#f5c518;border:1px solid #3a3a10;}
+.inst-glosa{background:#0d200d;color:#00d97e;border:1px solid #1a4020;}
+.eje-tag{
+  font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;
+  padding:3px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;
+}
+.tag-critica{background:#2a0d0f;color:var(--rojo);border:1px solid #4a1215;}
+.tag-alta{background:#0d2010;color:var(--verde);border:1px solid #1a4020;}
+
+/* EMPTY STATE */
+.empty-state{
+  padding:32px 20px;text-align:center;color:var(--text-dim);font-size:13px;
+}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;
+  display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);border-radius:12px;
+  padding:28px;width:480px;max-width:90vw;max-height:80vh;overflow-y:auto;
+}
+.modal h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;}
+.form-group{margin-bottom:16px;}
+.form-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:5px;display:block;font-weight:600;}
+.form-input{
+  width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);
+  padding:8px 12px;border-radius:6px;font-size:12px;font-family:'JetBrains Mono',monospace;
+  outline:none;transition:.15s;
+}
+.form-input:focus{border-color:var(--accent);}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;}
+.btn-primary{background:var(--accent);color:#fff;border:none;padding:8px 18px;
+  border-radius:6px;font-size:13px;cursor:pointer;font-family:'Mulish',sans-serif;font-weight:600;}
+.btn-cancel{background:transparent;border:1px solid var(--border2);color:var(--text-muted);
+  padding:8px 18px;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Mulish',sans-serif;}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:7px;
+  font-size:13px;z-index:999;transform:translateY(60px);opacity:0;
+  transition:.3s ease;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* NO DATA */
+.total-row{
+  display:grid;
+  grid-template-columns:200px 1fr 100px;
+  align-items:center;
+  padding:14px 20px;
+  border-bottom:1px solid var(--border2);
+  gap:16px;
+  background:rgba(245,197,24,0.04);
+  border-left:3px solid var(--amarillo);
+}
+.total-row:hover{background:rgba(245,197,24,0.07);}
+.total-name{font-size:13px;font-weight:600;color:var(--amarillo);letter-spacing:.01em;}
+.total-result{text-align:right;}
+.total-pct{
+  font-family:'Syne',sans-serif;font-size:22px;font-weight:700;
+  letter-spacing:-.02em;line-height:1;
+}
+.total-pct.verde{color:var(--verde);}
+.total-pct.amarillo{color:var(--amarillo);}
+.total-pct.rojo{color:var(--rojo);}
+.total-numden{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:3px;}
+.no-data-row{
+  padding:12px 20px;font-size:12px;color:var(--text-dim);
+  font-family:'JetBrains Mono',monospace;font-style:italic;
+}
+
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .summary-strip{grid-template-columns:1fr 1fr;}
+  .hosp-grid{grid-template-columns:1fr 80px;}
+  .chart-wrap{display:none;}
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-brand">
+  <div class="brand">
+    <span class="brand-badge">SDGA 2026</span>
     <div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span class="brand-pill">SDGA 2026</span>
-        <span class="brand-title">Tablero Trazadores</span>
-      </div>
+      <div class="brand-title">Cuadro de Mando · Ejes Estratégicos SDGA</div>
       <div class="brand-sub">Servicio de Salud Los Ríos · Subdirección de Gestión Asistencial</div>
     </div>
   </div>
   <div class="header-right">
-    <div class="sync-indicator">
-      <span class="sync-dot"></span>
-      <span id="syncLabel">Última actualización: —</span>
-    </div>
-    <button class="btn-config" onclick="openModal()">⚙ Configurar fuente</button>
+    <span class="sync-dot"></span>
+    <span class="sync-txt" id="syncTxt">—</span>
+    <button class="btn-cfg" onclick="openModal()">⚙ Fuente de datos</button>
   </div>
 </header>
 
-<div class="container">
+<div class="page">
 
-  <!-- Resumen ejecutivo -->
-  <div class="summary-cards" id="summaryCards">
-    <!-- llenado por JS -->
-  </div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
 
-  <!-- EJE 3: Eficiencia Hospitalaria -->
-  <div class="section-label">
-    <h2>Eje 3 — Eficiencia Hospitalaria</h2>
-    <span class="section-tag tag-alta">ALTA</span>
-  </div>
-
-  <!-- Indicador: Suspensiones quirúrgicas -->
-  <div class="indicator-card" id="card-suspensiones">
-    <div class="card-header">
-      <div class="card-meta">
-        <div class="card-code">COMGES/BSC · Cód. 1.2 · A21 H102+I102 / F102+G102</div>
-        <div class="card-name">Suspensiones quirúrgicas en cirugías mayores electivas</div>
-        <div class="card-formula">(Cirugías suspendidas / Cirugías programadas) × 100</div>
-      </div>
-      <div class="card-meta-right">
-        <div class="meta-target">Meta 2026: <span>≤ 6.5%</span></div>
-        <span class="section-tag tag-alta" style="font-size:10px;">REM · Mensual</span>
-      </div>
-    </div>
-    <div class="hospitals-grid" id="grid-suspensiones">
-      <!-- llenado por JS -->
-    </div>
-  </div>
-
-  <!-- Sección de ingreso de datos -->
-  <div class="add-data-section">
-    <h3>Ingresar datos</h3>
-    <div class="add-data-sub">Registra manualmente los valores del mes o conecta una Google Sheet para actualización automática.</div>
-
-    <div class="add-form-grid">
-      <div class="add-form-group">
-        <label class="add-form-label">Hospital</label>
-        <select class="form-input" id="inp-hospital">
-          <option value="valdivia">Hospital Base Valdivia</option>
-          <option value="launion">Hospital La Unión</option>
-          <option value="riobueno">Hospital Río Bueno</option>
-        </select>
-      </div>
-      <div class="add-form-group">
-        <label class="add-form-label">Mes</label>
-        <select class="form-input" id="inp-mes">
-          <option value="Ene">Enero</option>
-          <option value="Feb">Febrero</option>
-          <option value="Mar">Marzo</option>
-          <option value="Abr">Abril</option>
-          <option value="May">Mayo</option>
-          <option value="Jun">Junio</option>
-          <option value="Jul">Julio</option>
-          <option value="Ago">Agosto</option>
-          <option value="Sep">Septiembre</option>
-          <option value="Oct">Octubre</option>
-          <option value="Nov">Noviembre</option>
-          <option value="Dic">Diciembre</option>
-        </select>
-      </div>
-      <div class="add-form-group">
-        <label class="add-form-label">Numerador (susp.)</label>
-        <input type="number" class="form-input" id="inp-num" placeholder="H102+I102" min="0">
-      </div>
-      <div class="add-form-group">
-        <label class="add-form-label">Denominador (prog.)</label>
-        <input type="number" class="form-input" id="inp-den" placeholder="F102+G102" min="0">
-      </div>
-      <div class="add-form-group">
-        <label class="add-form-label">Indicador</label>
-        <select class="form-input" id="inp-indicador">
-          <option value="suspensiones">Suspensiones quirúrgicas</option>
-        </select>
-      </div>
-      <button class="btn-add" onclick="addDataPoint()">+ Agregar</button>
+    <div class="filter-section">
+      <div class="filter-title">Indicadores</div>
+      <div id="filterIndicadores"></div>
     </div>
 
-    <div class="sheets-link-bar" id="sheetsBar" style="display:none;">
-      <div>
-        <div class="link-text">🔗 Conectado a Google Sheets</div>
-        <div class="link-url" id="sheetsUrlDisplay">—</div>
-      </div>
-      <a class="btn-link" id="sheetsOpenLink" href="#" target="_blank">↗ Abrir Sheets</a>
-    </div>
-  </div>
+    <div class="divider"></div>
 
+    <div class="filter-section">
+      <div class="filter-title">Período</div>
+      <div class="period-grid" id="periodQuick">
+        <button class="period-btn" data-period="last1" onclick="setPeriod('last1',this)">Último mes</button>
+        <button class="period-btn" data-period="last3" onclick="setPeriod('last3',this)">Últimos 3</button>
+        <button class="period-btn active" data-period="all" onclick="setPeriod('all',this)">Todo</button>
+        <button class="period-btn" data-period="custom" onclick="setPeriod('custom',this)">Personalizado</button>
+      </div>
+      <div class="custom-range" id="customRange" style="display:none;">
+        <label>Desde</label>
+        <select class="filter-select" id="selDesde" onchange="applyCustomPeriod()"></select>
+        <label>Hasta</label>
+        <select class="filter-select" id="selHasta" onchange="applyCustomPeriod()"></select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="filter-section">
+      <div class="filter-title">Establecimientos</div>
+      <div id="filterHospitales"></div>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="btn-reset" onclick="resetFilters()">↺ Restablecer filtros</button>
+    </div>
+
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="summary-strip" id="summaryStrip"></div>
+
+    <div class="eje-header">
+      <span class="eje-title">Eje 3 — Eficiencia Hospitalaria</span>
+      <span class="eje-tag tag-alta">ALTA</span>
+    </div>
+
+    <div id="indicadoresContainer"></div>
+
+  </main>
 </div>
 
-<!-- Modal configuración -->
+<!-- MODAL FUENTE -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
   <div class="modal">
     <h3>Configurar fuente de datos</h3>
-    <div class="modal-sub">Conecta una Google Sheet publicada como JSON para actualizar el dashboard automáticamente. La hoja debe tener la estructura de columnas: <code>hospital, mes, indicador, numerador, denominador</code></div>
-
+    <div class="modal-sub">Conecta una Google Sheet publicada para actualización automática. La hoja debe tener columnas: <code>hospital_codigo, mes, indicador_clave, numerador, denominador</code></div>
     <div class="form-group">
-      <label class="form-label">URL de Google Sheets (JSON publicado)</label>
+      <label class="form-label">URL Google Sheets (JSON publicado)</label>
       <input type="text" class="form-input" id="sheetsUrl" placeholder="https://docs.google.com/spreadsheets/d/ID/gviz/tq?tqx=out:json">
     </div>
-
-    <div class="form-group">
-      <label class="form-label">Instrucciones para publicar</label>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:14px;font-size:12px;color:var(--text-muted);line-height:1.7;font-family:'DM Mono',monospace;">
-        1. En Google Sheets → Archivo → Compartir → Publicar en la web<br>
-        2. Selecciona la hoja de datos → Formato CSV o JSON<br>
-        3. Copia la URL y pégala arriba<br>
-        4. Para formato JSON: reemplaza /pub? por /gviz/tq?tqx=out:json&
-      </div>
-    </div>
-
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="btn-primary" onclick="saveConfig()">Guardar y sincronizar</button>
@@ -783,380 +413,551 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ─────────────────────────────────────────
-// ESTADO GLOBAL
-// ─────────────────────────────────────────
-const HOSPITALS = {
-  valdivia:  { name: 'Hospital Base Valdivia', short: 'HBV' },
-  launion:   { name: 'Hospital La Unión',       short: 'HLU' },
-  riobueno:  { name: 'Hospital Río Bueno',       short: 'HRB' },
+// ═══════════════════════════════════════════
+// DATOS
+// ═══════════════════════════════════════════
+const HOSPITALES = {
+  2100: { nombre: 'Hospital Base Valdivia',          short: 'HBV', complejidad: 'alta' },
+  2101: { nombre: 'Hospital de Corral',               short: 'HCO', complejidad: 'baja' },
+  2102: { nombre: 'Hospital de Los Lagos',            short: 'HLL', complejidad: 'baja' },
+  2103: { nombre: 'Hospital de Lanco',                short: 'HLA', complejidad: 'baja' },
+  2104: { nombre: 'Hospital La Unión',                short: 'HLU', complejidad: 'media' },
+  2105: { nombre: 'Hospital de Río Bueno',            short: 'HRB', complejidad: 'media' },
+  2106: { nombre: 'Hospital de Paillaco',             short: 'HPA', complejidad: 'baja' },
+  2200: { nombre: 'Hospital Santa Elisa (Mariquina)', short: 'HMA', complejidad: 'baja' },
+  2201: { nombre: 'Hospital Panguipulli',             short: 'HPG', complejidad: 'baja' },
 };
 
-const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_ORD = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_FULL = {
+  Ene:'Enero',Feb:'Febrero',Mar:'Marzo',Abr:'Abril',May:'Mayo',Jun:'Junio',
+  Jul:'Julio',Ago:'Agosto',Sep:'Septiembre',Oct:'Octubre',Nov:'Noviembre',Dic:'Diciembre'
+};
 
-const INDICATORS = {
+const INDICADORES_DEF = {
   suspensiones: {
-    meta: 6.5,     // ≤ 6.5%
-    invert: true,  // menor es mejor
+    nombre: 'Suspensiones quirúrgicas en cirugías mayores electivas',
+    codigo: 'Cód. 1.2 · A21 (H102+I102) / (F102+G102)',
+    formula: '(Suspendidas / Programadas) × 100',
+    meta: 6.5, invert: true, fuente: 'REM A',
+    metaLabel: '≤ 6.5%',
+    instrumentos: ['COMGES', 'BSC'],
+  },
+  ambulatorizacion: {
+    nombre: 'Ambulatorización de cirugías mayores electivas',
+    codigo: 'Cód. 1.1 · BS B17 C199 / (C198+C199)',
+    formula: '(Electivas mayores ambulatorias / Total electivas mayores) × 100',
+    meta: 50, invert: false, fuente: 'REM BS',
+    metaLabel: '≥ 50%',
+    instrumentos: ['COMGES'],
+  },
+  ueh_12h: {
+    nombre: 'Hospitalización desde UEH en menos de 12 horas',
+    codigo: 'Cód. 1.11 · A08 C107 / (C107+C108+C109+C112)',
+    formula: '(Hospitalizados < 12h / Total con indicación hospitalización) × 100',
+    meta: 85, invert: false, fuente: 'REM A',
+    metaLabel: '≥ 85%',
+    instrumentos: ['COMGES', 'Glosa 4'],
+  },
+};
+
+// Estructura: DATA[año][mes][indicador][cod_deis] = {num, den}
+const DATA = {
+  2025: {
+    Sep: {
+      suspensiones:    {2100:{num:47,den:728},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:11,den:170},2105:{num:1,den:53},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ambulatorizacion:{2100:{num:0,den:0},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:0,den:0},2105:{num:0,den:0},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ueh_12h:         {2100:{num:546,den:965},2101:{num:20,den:20},2102:{num:52,den:52},2103:{num:59,den:59},2104:{num:149,den:149},2105:{num:159,den:159},2106:{num:88,den:88},2200:{num:122,den:122},2201:{num:182,den:182}},
+    },
+    Oct: {
+      suspensiones:    {2100:{num:51,den:832},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:5,den:196},2105:{num:1,den:34},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ambulatorizacion:{2100:{num:677,den:1242},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:78,den:191},2105:{num:37,den:38},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ueh_12h:         {2100:{num:494,den:996},2101:{num:27,den:27},2102:{num:43,den:43},2103:{num:55,den:55},2104:{num:193,den:193},2105:{num:203,den:203},2106:{num:92,den:92},2200:{num:130,den:130},2201:{num:210,den:210}},
+    },
+    Nov: {
+      suspensiones:    {2100:{num:69,den:707},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:20,den:214},2105:{num:4,den:57},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ambulatorizacion:{2100:{num:451,den:940},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:87,den:207},2105:{num:51,den:51},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ueh_12h:         {2100:{num:478,den:923},2101:{num:20,den:20},2102:{num:53,den:53},2103:{num:58,den:58},2104:{num:162,den:162},2105:{num:174,den:174},2106:{num:108,den:108},2200:{num:97,den:97},2201:{num:188,den:188}},
+    },
+    Dic: {
+      suspensiones:    {2100:{num:61,den:672},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:4,den:129},2105:{num:2,den:33},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ambulatorizacion:{2100:{num:613,den:1079},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:27,den:134},2105:{num:28,den:32},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ueh_12h:         {2100:{num:501,den:958},2101:{num:17,den:17},2102:{num:46,den:46},2103:{num:53,den:53},2104:{num:160,den:160},2105:{num:181,den:181},2106:{num:98,den:98},2200:{num:106,den:106},2201:{num:192,den:192}},
+    }
+  },
+  2026: {
+    Ene: {
+      suspensiones:    {2100:{num:44,den:664},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:19},2104:{num:13,den:103},2105:{num:10,den:27},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ambulatorizacion:{2100:{num:379,den:868},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:17,den:63},2105:{num:16,den:17},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ueh_12h:         {2100:{num:497,den:945},2101:{num:8,den:8},2102:{num:58,den:58},2103:{num:56,den:58},2104:{num:138,den:138},2105:{num:154,den:154},2106:{num:80,den:80},2200:{num:96,den:96},2201:{num:14,den:14}},
+    },
+    Feb: {
+      suspensiones:    {2100:{num:41,den:533},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:24},2104:{num:9,den:113},2105:{num:0,den:0},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ambulatorizacion:{2100:{num:234,den:673},2101:{num:0,den:0},2102:{num:0,den:0},2103:{num:0,den:0},2104:{num:20,den:128},2105:{num:0,den:0},2106:{num:0,den:0},2200:{num:0,den:0},2201:{num:0,den:0}},
+      ueh_12h:         {2100:{num:516,den:888},2101:{num:12,den:12},2102:{num:49,den:49},2103:{num:57,den:57},2104:{num:146,den:146},2105:{num:161,den:161},2106:{num:92,den:92},2200:{num:74,den:74},2201:{num:14,den:14}},
+    }
   }
 };
 
-// Datos iniciales cargados desde los xlsm de Enero
-let DATA = {
-  suspensiones: {
-    valdivia:  { Ene: { num: 44, den: 664 } },
-    launion:   { Ene: { num: 13, den: 103 } },
-    riobueno:  { Ene: { num: 10, den: 27  } },
-  }
+// ═══════════════════════════════════════════
+// ESTADO DE FILTROS
+// ═══════════════════════════════════════════
+let filtros = {
+  indicadores: new Set(Object.keys(INDICADORES_DEF)),
+  hospitales: new Set(Object.keys(HOSPITALES).map(Number)),
+  periodMode: 'all',
+  periodos: getAllPeriodos(),  // [{año,mes}]
 };
 
-let sheetsUrl = localStorage.getItem('sdga_sheets_url') || '';
-
-// ─────────────────────────────────────────
-// UTILIDADES
-// ─────────────────────────────────────────
-function calcPct(num, den) {
-  if (!den || den === 0) return null;
-  return (num / den) * 100;
+function getAllPeriodos() {
+  const all = [];
+  for (const [año, meses] of Object.entries(DATA)) {
+    for (const mes of Object.keys(meses)) {
+      all.push({año: parseInt(año), mes});
+    }
+  }
+  return all.sort((a,b) => a.año - b.año || MESES_ORD.indexOf(a.mes) - MESES_ORD.indexOf(b.mes));
 }
 
-function semaforo(pct, ind) {
-  if (pct === null) return 'dim';
-  const { meta, invert } = INDICATORS[ind];
+function getPeriodoKey(p) { return `${p.año}-${p.mes}`; }
+function periodLabel(p) { return `${MESES_FULL[p.mes]} ${p.año}`; }
+
+// ═══════════════════════════════════════════
+// UTILIDADES
+// ═══════════════════════════════════════════
+function pct(num, den) {
+  if (!den || den === 0) return null;
+  return num / den * 100;
+}
+
+function semaforo(val, indKey) {
+  if (val === null) return 'dim';
+  const { meta, invert } = INDICADORES_DEF[indKey];
   if (invert) {
-    if (pct <= meta) return 'verde';
-    if (pct <= meta * 1.5) return 'amarillo';
+    if (val <= meta) return 'verde';
+    if (val <= meta * 1.5) return 'amarillo';
     return 'rojo';
   } else {
-    if (pct >= meta) return 'verde';
-    if (pct >= meta * 0.9) return 'amarillo';
+    if (val >= meta) return 'verde';
+    if (val >= meta * 0.9) return 'amarillo';
     return 'rojo';
   }
 }
 
-function barColor(s) {
-  if (s === 'verde') return 'var(--verde-text)';
-  if (s === 'amarillo') return 'var(--amarillo-text)';
-  if (s === 'rojo') return 'var(--rojo-text)';
-  return 'var(--text-dim)';
-}
+function fmtPct(v) { return v === null ? '—' : v.toFixed(1) + '%'; }
 
-function fmtPct(v) {
-  if (v === null) return '—';
-  return v.toFixed(1) + '%';
-}
-
-// ─────────────────────────────────────────
-// RENDER
-// ─────────────────────────────────────────
-function render() {
-  renderSummaryCards();
-  renderSuspensionesGrid();
-  updateSyncLabel();
-}
-
-function renderSummaryCards() {
-  const totalHospitals = Object.keys(HOSPITALS).length;
-  let verde = 0, amarillo = 0, rojo = 0;
-
-  for (const [hk, hospData] of Object.entries(DATA.suspensiones)) {
-    const latestMes = getLatestMes(hospData);
-    if (!latestMes) continue;
-    const { num, den } = hospData[latestMes];
-    const pct = calcPct(num, den);
-    const s = semaforo(pct, 'suspensiones');
-    if (s === 'verde') verde++;
-    else if (s === 'amarillo') amarillo++;
-    else if (s === 'rojo') rojo++;
-  }
-
-  document.getElementById('summaryCards').innerHTML = `
-    <div class="summary-card">
-      <div class="summary-card-label">Total Establecimientos</div>
-      <div class="summary-card-value" style="color:var(--accent2)">${totalHospitals}</div>
-      <div style="margin-top:12px;">
-        ${Object.values(HOSPITALS).map(h => `
-          <div class="table-entry">
-            <span style="color:var(--text-muted)">${h.name}</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-card-label">Indicadores activos</div>
-      <div class="summary-card-value" style="color:var(--verde-text)">1</div>
-      <div style="margin-top:12px;color:var(--text-muted);font-size:12px;line-height:1.8;">
-        <div>Suspensiones Quirúrgicas</div>
-        <div style="color:var(--text-dim)">+ 12 en configuración</div>
-      </div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-card-label">Estado semáforo · último mes</div>
-      <div class="summary-card-value" style="color:var(--text-muted)">${verde + amarillo + rojo}</div>
-      <div style="margin-top:12px;">
-        <div class="table-entry">
-          <span style="color:var(--verde-text)">🟢 Cumple</span>
-          <span style="font-family:'DM Mono',monospace;">${verde}</span>
-        </div>
-        <div class="table-entry">
-          <span style="color:var(--amarillo-text)">🟡 En riesgo</span>
-          <span style="font-family:'DM Mono',monospace;">${amarillo}</span>
-        </div>
-        <div class="table-entry">
-          <span style="color:var(--rojo-text)">🔴 Incumple</span>
-          <span style="font-family:'DM Mono',monospace;">${rojo}</span>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function getLatestMes(hospData) {
-  for (let i = MESES.length - 1; i >= 0; i--) {
-    if (hospData[MESES[i]]) return MESES[i];
-  }
-  return null;
-}
-
-function renderSuspensionesGrid() {
-  const grid = document.getElementById('grid-suspensiones');
-  const meta = INDICATORS.suspensiones.meta;
-  const chartH = 56;
-
-  // Calcular max global para escala uniforme
-  let maxPct = 0;
-  for (const hospData of Object.values(DATA.suspensiones)) {
-    for (const mes of MESES) {
-      if (hospData[mes]) {
-        const p = calcPct(hospData[mes].num, hospData[mes].den);
-        if (p !== null && p > maxPct) maxPct = p;
-      }
+// Agrega valores de un hospital en múltiples periodos (para periodo personalizado)
+function agregadoPeriodo(indKey, cod) {
+  let totalNum = 0, totalDen = 0, hayDatos = false;
+  for (const p of filtros.periodos) {
+    const v = DATA[p.año]?.[p.mes]?.[indKey]?.[cod];
+    if (v && v.den > 0) {
+      totalNum += v.num;
+      totalDen += v.den;
+      hayDatos = true;
     }
   }
-  const scaleMax = Math.max(maxPct * 1.2, meta * 2, 10);
-  const targetY = chartH - (meta / scaleMax * chartH);
+  if (!hayDatos) return null;
+  return { num: totalNum, den: totalDen, pct: pct(totalNum, totalDen) };
+}
 
-  grid.innerHTML = Object.entries(HOSPITALS).map(([hk, hosp]) => {
-    const hospData = DATA.suspensiones[hk] || {};
-    const latestMes = getLatestMes(hospData);
-    const latest = latestMes ? hospData[latestMes] : null;
-    const latestPct = latest ? calcPct(latest.num, latest.den) : null;
-    const s = semaforo(latestPct, 'suspensiones');
+// Serie temporal de un hospital para sparkline
+function serieTemporal(indKey, cod) {
+  return filtros.periodos.map(p => {
+    const v = DATA[p.año]?.[p.mes]?.[indKey]?.[cod];
+    const valor = (v && v.den > 0) ? pct(v.num, v.den) : null;
+    return { label: `${p.mes} ${p.año}`, valor };
+  });
+}
 
-    const bars = MESES.map(mes => {
-      const d = hospData[mes];
-      if (!d) return `
-        <div class="month-bar-wrap">
-          <div class="month-bar" style="height:2px;background:var(--border);"></div>
-          <span class="month-label">${mes}</span>
-        </div>`;
-      const pct = calcPct(d.num, d.den);
-      const ms = semaforo(pct, 'suspensiones');
-      const h = pct !== null ? Math.max((pct / scaleMax) * chartH, 2) : 2;
-      return `
-        <div class="month-bar-wrap">
-          <div class="month-value-tooltip">${fmtPct(pct)}</div>
-          <div class="month-bar" style="height:${h}px;background:${barColor(ms)};"></div>
-          <span class="month-label">${mes}</span>
-        </div>`;
-    }).join('');
+// ═══════════════════════════════════════════
+// RENDER SIDEBAR
+// ═══════════════════════════════════════════
+function renderSidebar() {
+  // Indicadores
+  const ci = document.getElementById('filterIndicadores');
+  ci.innerHTML = Object.entries(INDICADORES_DEF).map(([k,v]) => `
+    <div class="filter-option ${filtros.indicadores.has(k)?'active':''}" onclick="toggleIndicador('${k}',this)">
+      <input type="checkbox" ${filtros.indicadores.has(k)?'checked':''}>
+      <span>${v.nombre.length>32?v.nombre.slice(0,30)+'…':v.nombre}</span>
+    </div>`).join('');
 
-    return `
-      <div class="hospital-col">
-        <div class="hospital-name">${hosp.name}</div>
-        <div style="position:relative;height:${chartH}px;margin-bottom:16px;">
-          <div class="target-line" style="top:${targetY}px;">
-            <span class="target-line-label">≤${meta}%</span>
-          </div>
-          <div class="month-chart" style="height:${chartH}px;margin-bottom:0;">${bars}</div>
+  // Hospitales
+  const ch = document.getElementById('filterHospitales');
+  ch.innerHTML = Object.entries(HOSPITALES).map(([cod,h]) => `
+    <div class="filter-option ${filtros.hospitales.has(Number(cod))?'active':''}" onclick="toggleHospital(${cod},this)">
+      <input type="checkbox" ${filtros.hospitales.has(Number(cod))?'checked':''}>
+      <span>${h.nombre.length>26?h.nombre.slice(0,24)+'…':h.nombre}</span>
+    </div>`).join('');
+
+  // Selectores personalizados
+  const allP = getAllPeriodos();
+  const selD = document.getElementById('selDesde');
+  const selH = document.getElementById('selHasta');
+  [selD, selH].forEach(sel => {
+    sel.innerHTML = allP.map(p =>
+      `<option value="${getPeriodoKey(p)}">${periodLabel(p)}</option>`
+    ).join('');
+  });
+  if (allP.length > 0) {
+    selD.value = getPeriodoKey(allP[0]);
+    selH.value = getPeriodoKey(allP[allP.length-1]);
+  }
+}
+
+function toggleIndicador(key, el) {
+  if (filtros.indicadores.has(key) && filtros.indicadores.size > 1) {
+    filtros.indicadores.delete(key);
+    el.classList.remove('active');
+    el.querySelector('input').checked = false;
+  } else {
+    filtros.indicadores.add(key);
+    el.classList.add('active');
+    el.querySelector('input').checked = true;
+  }
+  render();
+}
+
+function toggleHospital(cod, el) {
+  cod = Number(cod);
+  if (filtros.hospitales.has(cod) && filtros.hospitales.size > 1) {
+    filtros.hospitales.delete(cod);
+    el.classList.remove('active');
+    el.querySelector('input').checked = false;
+  } else {
+    filtros.hospitales.add(cod);
+    el.classList.add('active');
+    el.querySelector('input').checked = true;
+  }
+  render();
+}
+
+function setPeriod(mode, btn) {
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filtros.periodMode = mode;
+  document.getElementById('customRange').style.display = mode === 'custom' ? 'block' : 'none';
+
+  const all = getAllPeriodos();
+  if (mode === 'all') filtros.periodos = all;
+  else if (mode === 'last1') filtros.periodos = all.slice(-1);
+  else if (mode === 'last3') filtros.periodos = all.slice(-3);
+  else if (mode === 'custom') applyCustomPeriod();
+  render();
+}
+
+function applyCustomPeriod() {
+  const all = getAllPeriodos();
+  const desdeKey = document.getElementById('selDesde').value;
+  const hastaKey = document.getElementById('selHasta').value;
+  filtros.periodos = all.filter(p => {
+    const k = getPeriodoKey(p);
+    return k >= desdeKey && k <= hastaKey;
+  });
+  if (filtros.periodos.length === 0) filtros.periodos = all;
+  render();
+}
+
+function resetFilters() {
+  filtros.indicadores = new Set(Object.keys(INDICADORES_DEF));
+  filtros.hospitales = new Set(Object.keys(HOSPITALES).map(Number));
+  filtros.periodos = getAllPeriodos();
+  filtros.periodMode = 'all';
+  document.querySelectorAll('.period-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.period === 'all');
+  });
+  document.getElementById('customRange').style.display = 'none';
+  renderSidebar();
+  render();
+}
+
+// ═══════════════════════════════════════════
+// RENDER SUMMARY STRIP
+// ═══════════════════════════════════════════
+function renderSummary() {
+  let verde = 0, amarillo = 0, rojo = 0, total = 0;
+  for (const indKey of filtros.indicadores) {
+    for (const cod of filtros.hospitales) {
+      const ag = agregadoPeriodo(indKey, cod);
+      if (!ag) continue;
+      total++;
+      const s = semaforo(ag.pct, indKey);
+      if (s === 'verde') verde++;
+      else if (s === 'amarillo') amarillo++;
+      else if (s === 'rojo') rojo++;
+    }
+  }
+  const periodoTxt = filtros.periodos.length === 1
+    ? periodLabel(filtros.periodos[0])
+    : `${filtros.periodos.length} meses`;
+
+  document.getElementById('summaryStrip').innerHTML = `
+    <div class="scard info">
+      <div class="scard-label">Período activo</div>
+      <div class="scard-value" style="font-size:18px;margin-top:4px;">${periodoTxt}</div>
+      <div class="scard-sub">${filtros.hospitales.size} establec. · ${filtros.indicadores.size} indicadores</div>
+    </div>
+    <div class="scard verde">
+      <div class="scard-label">🟢 Cumple</div>
+      <div class="scard-value">${verde}</div>
+      <div class="scard-sub">de ${total} mediciones</div>
+    </div>
+    <div class="scard amarillo">
+      <div class="scard-label">🟡 En riesgo</div>
+      <div class="scard-value">${amarillo}</div>
+      <div class="scard-sub">de ${total} mediciones</div>
+    </div>
+    <div class="scard rojo">
+      <div class="scard-label">🔴 Incumple</div>
+      <div class="scard-value">${rojo}</div>
+      <div class="scard-sub">de ${total} mediciones</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+// SPARKLINE SVG
+// ═══════════════════════════════════════════
+function buildSparkline(serie, indKey, meta, invert) {
+  const W = 400, H = 80;
+  const vals = serie.map(s => s.valor);
+  const hasData = vals.some(v => v !== null);
+  if (!hasData) return `<svg class="sparkline-svg" viewBox="0 0 ${W} ${H}"></svg>`;
+
+  const nonNull = vals.filter(v => v !== null);
+  const minV = Math.min(...nonNull, invert ? 0 : meta * 0.5);
+  const maxV = Math.max(...nonNull, invert ? meta * 2 : meta * 1.2, 1);
+  const pad = 6;
+  const xStep = (W - pad*2) / Math.max(serie.length - 1, 1);
+
+  const toY = v => H - pad - ((v - minV) / (maxV - minV)) * (H - pad*2);
+  const metaY = toY(meta);
+
+  // Build polyline points
+  const pts = serie.map((s, i) => s.valor !== null
+    ? `${pad + i * xStep},${toY(s.valor)}`
+    : null
+  ).filter(Boolean);
+
+  // Color of last known value
+  const lastVal = [...vals].reverse().find(v => v !== null);
+  const sem = semaforo(lastVal, indKey);
+  const lineColor = sem === 'verde' ? 'var(--verde)' : sem === 'amarillo' ? 'var(--amarillo)' : 'var(--rojo)';
+
+  // Dots
+  const dots = serie.map((s, i) => {
+    if (s.valor === null) return '';
+    const x = pad + i * xStep;
+    const y = toY(s.valor);
+    const ds = semaforo(s.valor, indKey);
+    const dc = ds === 'verde' ? 'var(--verde)' : ds === 'amarillo' ? 'var(--amarillo)' : 'var(--rojo)';
+    return `<circle cx="${x}" cy="${y}" r="3" fill="${dc}" stroke="var(--bg)" stroke-width="1.5">
+      <title>${s.label}: ${fmtPct(s.valor)}</title>
+    </circle>`;
+  }).join('');
+
+  // Month labels
+  const labels = serie.map((s, i) => {
+    const x = pad + i * xStep;
+    const shortLabel = s.label.split(' ')[0];
+    return `<text x="${x}" y="${H}" font-size="8" text-anchor="middle" fill="var(--text-dim)" font-family="JetBrains Mono">${shortLabel}</text>`;
+  }).join('');
+
+  return `<svg class="sparkline-svg" viewBox="0 0 ${W} ${H+10}" preserveAspectRatio="none">
+    <line x1="${pad}" y1="${metaY}" x2="${W-pad}" y2="${metaY}"
+      stroke="var(--text-dim)" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="${W-pad}" y="${metaY-2}" font-size="8" text-anchor="end"
+      fill="var(--text-dim)" font-family="JetBrains Mono">${meta}%</text>
+    ${pts.length > 1 ? `<polyline points="${pts.join(' ')}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
+    ${dots}
+    ${labels}
+  </svg>`;
+}
+
+// ═══════════════════════════════════════════
+// RENDER INDICADORES
+// ═══════════════════════════════════════════
+function render() {
+  renderSummary();
+
+  const container = document.getElementById('indicadoresContainer');
+  container.innerHTML = '';
+
+  for (const [indKey, indDef] of Object.entries(INDICADORES_DEF)) {
+    if (!filtros.indicadores.has(indKey)) continue;
+
+    // Calcular datos por hospital
+    const hospRows = [];
+    for (const [codStr, hosp] of Object.entries(HOSPITALES)) {
+      const cod = Number(codStr);
+      if (!filtros.hospitales.has(cod)) continue;
+
+      const ag = agregadoPeriodo(indKey, cod);
+      if (!ag) continue; // Ocultar hospitales sin datos
+
+      const serie = serieTemporal(indKey, cod);
+      const s = semaforo(ag.pct, indKey);
+      hospRows.push({ cod, hosp, ag, serie, s });
+    }
+
+    if (hospRows.length === 0) continue;
+
+    // Contar semáforos para el header
+    let sv=0, sa=0, sr=0;
+    hospRows.forEach(r => {
+      if(r.s==='verde') sv++;
+      else if(r.s==='amarillo') sa++;
+      else if(r.s==='rojo') sr++;
+    });
+
+    // Compute service total
+    let totalNum = 0, totalDen = 0;
+    hospRows.forEach(r => { totalNum += r.ag.num; totalDen += r.ag.den; });
+    const totalPct = totalDen > 0 ? totalNum / totalDen * 100 : null;
+    const totalSem = semaforo(totalPct, indKey);
+    const totalSemColor = totalSem==='verde'?'var(--verde)':totalSem==='amarillo'?'var(--amarillo)':totalSem==='rojo'?'var(--rojo)':'var(--text-dim)';
+
+    const cardId = `card-${indKey}`;
+    const isOpen = document.getElementById(cardId)?.classList.contains('open') || false;
+
+    const card = document.createElement('div');
+    card.className = `ind-card ${isOpen ? 'open' : ''}`;
+    card.id = cardId;
+
+    const semPills = [
+      sv > 0 ? `<span class="sm-pill verde"><span class="sm-dot verde"></span>${sv}</span>` : '',
+      sa > 0 ? `<span class="sm-pill amarillo"><span class="sm-dot amarillo"></span>${sa}</span>` : '',
+      sr > 0 ? `<span class="sm-pill rojo"><span class="sm-dot rojo"></span>${sr}</span>` : '',
+    ].join('');
+
+    const periodTxt = filtros.periodos.length === 1
+      ? periodLabel(filtros.periodos[0])
+      : `${filtros.periodos.length} meses`;
+
+    card.innerHTML = `
+      <div class="ind-card-header" onclick="toggleCard('${cardId}')">
+        <div class="ind-header-left">
+          <div class="ind-code">${indDef.codigo}</div>
+          <div class="ind-name">${indDef.nombre}</div>
+          <div class="ind-formula">${indDef.formula}</div>
         </div>
-        <div class="summary-row">
-          <div>
-            <div class="big-pct pct-${s}">${fmtPct(latestPct)}</div>
-            ${latest ? `<div class="num-den">${latest.num} / ${latest.den} · ${latestMes}</div>` : '<div class="num-den">Sin datos</div>'}
+        <div class="ind-header-right">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="text-align:right;">
+                <div style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;">Total Servicio</div>
+                <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.02em;color:${totalSemColor}" id="total-hdr-${indKey}">${fmtPct(totalPct)}</div>
+              </div>
+              <div style="width:1px;height:32px;background:var(--border2);"></div>
+              <div class="ind-meta">Meta: <span>${indDef.metaLabel}</span> · ${indDef.fuente} · <span style="color:var(--text-muted)">${periodTxt}</span></div>
+            </div>
+            <div class="instrumento-badges">${(indDef.instrumentos||[]).map(i => {
+              const cls = i==='COMGES'?'inst-comges':i==='BSC'?'inst-bsc':'inst-glosa';
+              return `<span class="inst-badge ${cls}">${i}</span>`;
+            }).join('')}</div>
           </div>
-          <div class="semaforo semaforo-${s}"></div>
+          <div class="ind-semaforos">${semPills}</div>
+          <span class="chevron">▾</span>
         </div>
       </div>
-    `;
-  }).join('');
-}
+      <div class="ind-card-body">
+        <div class="total-row">
+          <div class="total-name">▸ Total Servicio de Salud</div>
+          <div class="chart-wrap"></div>
+          <div class="total-result">
+            <div class="total-pct ${totalSem}">${fmtPct(totalPct)}</div>
+            <div class="total-numden">${totalNum} / ${totalDen}</div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:3px;">${filtros.periodos.length > 1 ? 'Acumulado '+filtros.periodos.length+' meses' : periodLabel(filtros.periodos[0])||''}</div>
+          </div>
+        </div>
+        ${hospRows.map(r => {
+          const spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert);
+          const pctLabel = filtros.periodos.length > 1
+            ? `<div style="font-size:9px;color:var(--text-dim);margin-top:2px;">Acumulado ${filtros.periodos.length} meses</div>`
+            : '';
+          return `
+          <div class="hosp-grid">
+            <div class="hosp-name-cell">
+              ${r.hosp.nombre}
 
-function updateSyncLabel() {
-  const now = new Date();
-  document.getElementById('syncLabel').textContent =
-    `Actualizado: ${now.toLocaleDateString('es-CL')} ${now.toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'})}`;
-}
+            </div>
+            <div class="chart-wrap">${spark}</div>
+            <div class="hosp-result">
+              <div class="result-pct ${r.s}">${fmtPct(r.ag.pct)}</div>
+              <div class="result-numden">${r.ag.num} / ${r.ag.den}</div>
+              ${pctLabel}
+              <div class="result-sem">
+                <div class="sem-badge ${r.s}"></div>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
 
-// ─────────────────────────────────────────
-// INGRESO MANUAL
-// ─────────────────────────────────────────
-function addDataPoint() {
-  const hospital = document.getElementById('inp-hospital').value;
-  const mes = document.getElementById('inp-mes').value;
-  const num = parseFloat(document.getElementById('inp-num').value);
-  const den = parseFloat(document.getElementById('inp-den').value);
-  const ind = document.getElementById('inp-indicador').value;
-
-  if (isNaN(num) || isNaN(den) || den < 0) {
-    showToast('⚠ Ingresa numerador y denominador válidos', 'rojo');
-    return;
+    container.appendChild(card);
   }
 
-  if (!DATA[ind]) DATA[ind] = {};
-  if (!DATA[ind][hospital]) DATA[ind][hospital] = {};
-  DATA[ind][hospital][mes] = { num, den };
-
-  saveLocal();
-  render();
-  showToast(`✓ Dato agregado: ${HOSPITALS[hospital].name} · ${mes}`);
-
-  document.getElementById('inp-num').value = '';
-  document.getElementById('inp-den').value = '';
+  document.getElementById('syncTxt').textContent =
+    `Actualizado: ${new Date().toLocaleDateString('es-CL')}`;
 }
 
-// ─────────────────────────────────────────
-// PERSISTENCIA LOCAL
-// ─────────────────────────────────────────
-function saveLocal() {
-  localStorage.setItem('sdga_data', JSON.stringify(DATA));
+function toggleCard(id) {
+  document.getElementById(id)?.classList.toggle('open');
 }
 
-function loadLocal() {
-  const saved = localStorage.getItem('sdga_data');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      // Merge: no sobreescribir datos base
-      for (const [ind, indData] of Object.entries(parsed)) {
-        if (!DATA[ind]) DATA[ind] = {};
-        for (const [hosp, hospData] of Object.entries(indData)) {
-          if (!DATA[ind][hosp]) DATA[ind][hosp] = {};
-          Object.assign(DATA[ind][hosp], hospData);
-        }
-      }
-    } catch(e) { console.warn('Error loading local data', e); }
-  }
+// ═══════════════════════════════════════════
+// MODAL / CONFIG
+// ═══════════════════════════════════════════
+let sheetsUrl = localStorage.getItem('sdga_sheets_url') || '';
+function openModal() { document.getElementById('sheetsUrl').value = sheetsUrl; document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target.id === 'modalOverlay') closeModal(); }
+function saveConfig() {
+  sheetsUrl = document.getElementById('sheetsUrl').value.trim();
+  localStorage.setItem('sdga_sheets_url', sheetsUrl);
+  closeModal();
+  if (sheetsUrl) fetchSheets(sheetsUrl);
 }
 
-// ─────────────────────────────────────────
-// GOOGLE SHEETS SYNC
-// ─────────────────────────────────────────
 async function fetchSheets(url) {
   try {
-    // Para Google Sheets publicado como CSV
     const res = await fetch(url);
     const text = await res.text();
-
-    // Limpiar prefijo JSONP de Google Viz si existe
-    const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\((.*)\);?$/s);
-    if (jsonMatch) {
-      const json = JSON.parse(jsonMatch[1]);
-      parseVisualizationResponse(json);
-      return;
-    }
-
-    // Intento CSV simple
+    const m = text.match(/google\.visualization\.Query\.setResponse\((.*)\);?\s*$/s);
+    if (m) { parseViz(JSON.parse(m[1])); return; }
     parseCSV(text);
-  } catch(e) {
-    console.error('Sheets fetch error', e);
-    showToast('⚠ No se pudo conectar a Google Sheets', 'rojo');
-  }
+  } catch(e) { showToast('⚠ No se pudo conectar', 'rojo'); }
 }
 
 function parseCSV(text) {
-  const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/"/g, '')));
+  const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/"/g,'')));
   if (rows.length < 2) return;
-  // Headers: hospital, mes, indicador, numerador, denominador
   for (let i = 1; i < rows.length; i++) {
-    const [hospital, mes, indicador, num, den] = rows[i];
-    if (!hospital || !mes || !indicador) continue;
-    const hk = hospitalKey(hospital);
-    if (!hk) continue;
-    if (!DATA[indicador]) DATA[indicador] = {};
-    if (!DATA[indicador][hk]) DATA[indicador][hk] = {};
-    DATA[indicador][hk][mes] = { num: parseFloat(num) || 0, den: parseFloat(den) || 0 };
+    const [cod, , mes, indKey, , num, den] = rows[i];
+    const codN = parseInt(cod);
+    const año = 2026; // TODO: add año column
+    if (!DATA[año]) DATA[año] = {};
+    if (!DATA[año][mes]) DATA[año][mes] = {};
+    if (!DATA[año][mes][indKey]) DATA[año][mes][indKey] = {};
+    DATA[año][mes][indKey][codN] = { num: parseFloat(num)||0, den: parseFloat(den)||0 };
   }
-  saveLocal();
   render();
   showToast('✓ Datos sincronizados desde Google Sheets');
 }
 
-function parseVisualizationResponse(json) {
-  const cols = json.table.cols.map(c => c.label.toLowerCase());
-  const rows = json.table.rows;
-  for (const row of rows) {
-    const vals = row.c.map(c => c ? c.v : null);
-    const obj = {};
-    cols.forEach((c, i) => obj[c] = vals[i]);
-    const hk = hospitalKey(obj.hospital || '');
-    if (!hk || !obj.mes || !obj.indicador) continue;
-    if (!DATA[obj.indicador]) DATA[obj.indicador] = {};
-    if (!DATA[obj.indicador][hk]) DATA[obj.indicador][hk] = {};
-    DATA[obj.indicador][hk][obj.mes] = { num: parseFloat(obj.numerador) || 0, den: parseFloat(obj.denominador) || 0 };
-  }
-  saveLocal();
-  render();
-  showToast('✓ Datos sincronizados desde Google Sheets');
-}
-
-function hospitalKey(name) {
-  const n = name.toLowerCase();
-  if (n.includes('valdivia')) return 'valdivia';
-  if (n.includes('uni') || n.includes('union')) return 'launion';
-  if (n.includes('bueno')) return 'riobueno';
-  return null;
-}
-
-// ─────────────────────────────────────────
-// MODAL
-// ─────────────────────────────────────────
-function openModal() {
-  document.getElementById('sheetsUrl').value = sheetsUrl;
-  document.getElementById('modalOverlay').classList.add('open');
-}
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-}
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-}
-function saveConfig() {
-  const url = document.getElementById('sheetsUrl').value.trim();
-  sheetsUrl = url;
-  localStorage.setItem('sdga_sheets_url', url);
-  closeModal();
-  if (url) {
-    document.getElementById('sheetsBar').style.display = 'flex';
-    document.getElementById('sheetsUrlDisplay').textContent = url.length > 60 ? url.slice(0,60) + '…' : url;
-    document.getElementById('sheetsOpenLink').href = url;
-    fetchSheets(url);
-  }
-}
-
-// ─────────────────────────────────────────
-// TOAST
-// ─────────────────────────────────────────
-function showToast(msg, type) {
+function showToast(msg, tipo) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.background = type === 'rojo' ? 'var(--rojo-bg)' : 'var(--verde-bg)';
-  t.style.borderColor = type === 'rojo' ? 'var(--rojo)' : 'var(--verde)';
-  t.style.color = type === 'rojo' ? 'var(--rojo-text)' : 'var(--verde-text)';
+  t.style.background = tipo === 'rojo' ? 'var(--rojo-bg)' : 'var(--verde-bg)';
+  t.style.border = `1px solid ${tipo === 'rojo' ? 'var(--rojo)' : 'var(--verde)'}`;
+  t.style.color = tipo === 'rojo' ? 'var(--rojo)' : 'var(--verde)';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════
 // INIT
-// ─────────────────────────────────────────
-loadLocal();
-if (sheetsUrl) {
-  document.getElementById('sheetsBar').style.display = 'flex';
-  document.getElementById('sheetsUrlDisplay').textContent = sheetsUrl.length > 60 ? sheetsUrl.slice(0,60) + '…' : sheetsUrl;
-  document.getElementById('sheetsOpenLink').href = sheetsUrl;
-  fetchSheets(sheetsUrl);
-}
+// ═══════════════════════════════════════════
+renderSidebar();
 render();
 </script>
 </body>
