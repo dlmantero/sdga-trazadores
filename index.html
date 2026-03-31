@@ -458,7 +458,7 @@ select.filter-select:focus{border-color:var(--accent);}
 
     <div class="summary-strip" id="summaryStrip"></div>
 
-    <div class="eje-header">
+    <div class="eje-header" id="eje-gestion">
       <span class="eje-title">Eje 3 — Eficiencia Hospitalaria</span>
       <span class="eje-tag tag-alta">ALTA</span>
     </div>
@@ -524,6 +524,26 @@ const INDICADORES_DEF = {
     meta: 50, invert: false, fuente: 'REM BS',
     metaLabel: '≥ 50%',
     instrumentos: ['COMGES'],
+  },
+  pde: {
+    nombre: 'Promedio de Días de Estada',
+    codigo: 'Cód. PDE · REM20 col.Q / (K+L+M+N)',
+    formula: 'Días de estada acumulados / Egresos totales acumulados',
+    meta: null, metaLow: null, metaHigh: null,
+    metaLabel: 'HBV 7-8d · Baja 3-6d · La Unión 5-7d',
+    invert: true, fuente: 'REM 20',
+    instrumentos: ['Glosa 4'],
+    metaByHosp: {
+      2100: 6,
+      2101: 3,
+      2102: 3,
+      2103: 3,
+      2104: 5,
+      2105: 3,
+      2106: 3,
+      2200: 3,
+      2201: 3,
+    },
   },
   ueh_12h: {
     nombre: 'Hospitalización desde UEH en menos de 12 horas',
@@ -700,6 +720,26 @@ function getRefPeriodos() {
   }
   return result;
 }
+// ═══════════════════════════════════════════
+// PDE DATA (REM 20 — 2025, todos los meses)
+// Estructura: pde[mes][cod_deis] = {num: dias_estada, den: egresos}
+// ═══════════════════════════════════════════
+const pde = {
+  Ene: {2100:{num:11674,den:2210},2101:{num:76,den:21},2102:{num:442,den:86},2103:{num:282,den:47},2104:{num:1714,den:274},2105:{num:1293,den:176},2106:{num:490,den:100},2200:{num:1142,den:110},2201:{num:835,den:202}},
+  Feb: {2100:{num:11471,den:2051},2101:{num:96,den:13},2102:{num:118,den:39},2103:{num:169,den:42},2104:{num:1749,den:236},2105:{num:799,den:156},2106:{num:327,den:89},2200:{num:714,den:82},2201:{num:764,den:213}},
+  Mar: {2100:{num:10513,den:2233},2101:{num:79,den:15},2102:{num:204,den:55},2103:{num:224,den:47},2104:{num:1848,den:244},2105:{num:805,den:154},2106:{num:745,den:102},2200:{num:1255,den:99},2201:{num:811,den:216}},
+  Abr: {2100:{num:12814,den:2229},2101:{num:53,den:25},2102:{num:1214,den:75},2103:{num:251,den:50},2104:{num:1508,den:293},2105:{num:988,den:186},2106:{num:486,den:121},2200:{num:310,den:78},2201:{num:937,den:250}},
+  May: {2100:{num:12640,den:2230},2101:{num:131,den:19},2102:{num:276,den:77},2103:{num:281,den:61},2104:{num:1892,den:308},2105:{num:1006,den:184},2106:{num:483,den:128},2200:{num:653,den:123},2201:{num:949,den:223}},
+  Jun: {2100:{num:11640,den:2137},2101:{num:113,den:18},2102:{num:308,den:71},2103:{num:205,den:58},2104:{num:1773,den:331},2105:{num:1032,den:197},2106:{num:1131,den:131},2200:{num:709,den:111},2201:{num:897,den:248}},
+  Jul: {2100:{num:12452,den:2200},2101:{num:69,den:22},2102:{num:301,den:78},2103:{num:209,den:48},2104:{num:2055,den:350},2105:{num:890,den:186},2106:{num:530,den:100},2200:{num:701,den:124},2201:{num:894,den:242}},
+  Ago: {2100:{num:13015,den:2242},2101:{num:169,den:18},2102:{num:232,den:68},2103:{num:466,den:54},2104:{num:1886,den:336},2105:{num:1025,den:170},2106:{num:442,den:112},2200:{num:1410,den:119},2201:{num:918,den:264}},
+  Sep: {2100:{num:11840,den:2295},2101:{num:60,den:16},2102:{num:690,den:68},2103:{num:225,den:51},2104:{num:2227,den:318},2105:{num:1724,den:197},2106:{num:694,den:86},2200:{num:1090,den:133},2201:{num:947,den:245}},
+  Oct: {2100:{num:11943,den:2385},2101:{num:126,den:32},2102:{num:255,den:61},2103:{num:229,den:57},2104:{num:1434,den:341},2105:{num:3828,den:208},2106:{num:426,den:92},2200:{num:623,den:122},2201:{num:1041,den:262}},
+  Nov: {2100:{num:11927,den:2202},2101:{num:41,den:22},2102:{num:286,den:67},2103:{num:636,den:65},2104:{num:2035,den:330},2105:{num:1367,den:178},2106:{num:826,den:110},2200:{num:1057,den:98},2201:{num:1001,den:234}},
+  Dic: {2100:{num:13781,den:2305},2101:{num:46,den:16},2102:{num:717,den:73},2103:{num:242,den:57},2104:{num:1623,den:287},2105:{num:1032,den:190},2106:{num:615,den:110},2200:{num:864,den:111},2201:{num:0,den:0}},
+};
+
+
 
 // ═══════════════════════════════════════════
 // ESTADO DE FILTROS
@@ -713,10 +753,18 @@ let filtros = {
 
 function getAllPeriodos() {
   const all = [];
+  const seen = new Set();
+  // From DATA (other indicators)
   for (const [año, meses] of Object.entries(DATA)) {
     for (const mes of Object.keys(meses)) {
-      all.push({año: parseInt(año), mes});
+      const key = año + '-' + mes;
+      if (!seen.has(key)) { seen.add(key); all.push({año: parseInt(año), mes}); }
     }
+  }
+  // From pde (Ene-Dic 2025, may include months not in DATA)
+  for (const mes of Object.keys(pde)) {
+    const key = '2025-' + mes;
+    if (!seen.has(key)) { seen.add(key); all.push({año: 2025, mes}); }
   }
   return all.sort((a,b) => a.año - b.año || MESES_ORD.indexOf(a.mes) - MESES_ORD.indexOf(b.mes));
 }
@@ -732,9 +780,26 @@ function pct(num, den) {
   return num / den * 100;
 }
 
-function semaforo(val, indKey) {
+function calcPct(num, den, indKey) {
+  if (!den || den === 0) return null;
+  if (indKey === 'pde') return Math.round(num / den * 100) / 100;
+  return num / den * 100;
+}
+
+function semaforo(val, indKey, cod) {
   if (val === null) return 'dim';
-  const { meta, invert } = INDICADORES_DEF[indKey];
+  const ind = INDICADORES_DEF[indKey];
+
+  // PDE: per-hospital range meta
+  if (indKey === 'pde') {
+    const metaVal = (ind.metaByHosp && cod && ind.metaByHosp[cod]) || 3;
+    if (val <= metaVal) return 'verde';
+    if (val <= metaVal * 1.2) return 'amarillo';
+    return 'rojo';
+  }
+
+  const { meta, invert } = ind;
+  if (meta === null) return 'dim';
   if (invert) {
     if (val <= meta) return 'verde';
     if (val <= meta * 1.5) return 'amarillo';
@@ -746,13 +811,27 @@ function semaforo(val, indKey) {
   }
 }
 
-function fmtPct(v) { return v === null ? '—' : v.toFixed(1) + '%'; }
+function fmtPct(v, indKey) {
+  if (v === null) return '—';
+  if (indKey === 'pde') return v.toFixed(1) + ' d';
+  return v.toFixed(1) + '%';
+}
 
 // Agrega valores de un hospital en múltiples periodos (para periodo personalizado)
 function agregadoPeriodo(indKey, cod) {
   let totalNum = 0, totalDen = 0, hayDatos = false;
+  const seenPdeMes = new Set();
   for (const p of filtros.periodos) {
-    const v = DATA[p.año]?.[p.mes]?.[indKey]?.[cod];
+    let v;
+    if (indKey === 'pde') {
+      // Only 2025 data exists — skip 2026 periods to avoid double-counting
+      if (p.año !== 2025) continue;
+      if (seenPdeMes.has(p.mes)) continue;
+      seenPdeMes.add(p.mes);
+      v = pde[p.mes]?.[cod];
+    } else {
+      v = DATA[p.año]?.[p.mes]?.[indKey]?.[cod];
+    }
     if (v && v.den > 0) {
       totalNum += v.num;
       totalDen += v.den;
@@ -760,15 +839,21 @@ function agregadoPeriodo(indKey, cod) {
     }
   }
   if (!hayDatos) return null;
-  return { num: totalNum, den: totalDen, pct: pct(totalNum, totalDen) };
+  return { num: totalNum, den: totalDen, pct: calcPct(totalNum, totalDen, indKey) };
 }
 
 // Serie temporal de un hospital para sparkline
 function serieTemporal(indKey, cod) {
-  return filtros.periodos.map(p => {
-    const v = DATA[p.año]?.[p.mes]?.[indKey]?.[cod];
-    const valor = (v && v.den > 0) ? pct(v.num, v.den) : null;
-    return { label: `${p.mes} ${p.año}`, valor };
+  // For PDE: only use 2025 months (no year in pde key, avoid duplicates from 2026)
+  const periods = indKey === 'pde'
+    ? filtros.periodos.filter(p => p.año === 2025 && pde[p.mes] !== undefined)
+    : filtros.periodos;
+  return periods.map(p => {
+    const v = indKey === 'pde'
+      ? pde[p.mes]?.[cod]
+      : DATA[p.año]?.[p.mes]?.[indKey]?.[cod];
+    const valor = (v && v.den > 0) ? calcPct(v.num, v.den, indKey) : null;
+    return { label: p.mes + ' ' + p.año, valor };
   });
 }
 
@@ -883,7 +968,7 @@ function renderSummary() {
       const ag = agregadoPeriodo(indKey, cod);
       if (!ag) continue;
       total++;
-      const s = semaforo(ag.pct, indKey);
+      const s = semaforo(ag.pct, indKey, Number(cod));
       if (s === 'verde') verde++;
       else if (s === 'amarillo') amarillo++;
       else if (s === 'rojo') rojo++;
@@ -919,20 +1004,30 @@ function renderSummary() {
 // ═══════════════════════════════════════════
 // SPARKLINE SVG
 // ═══════════════════════════════════════════
-function buildSparkline(serie, indKey, meta, invert) {
+function buildSparkline(serie, indKey, meta, invert, cod) {
   const W = 500, H = 140;
   const vals = serie.map(s => s.valor);
   const hasData = vals.some(v => v !== null);
   if (!hasData) return `<svg class="sparkline-svg" viewBox="0 0 ${W} ${H+24}" preserveAspectRatio="none"></svg>`;
 
   const nonNull = vals.filter(v => v !== null);
-  const minV = Math.min(...nonNull, invert ? 0 : meta * 0.5);
-  const maxV = Math.max(...nonNull, invert ? meta * 2 : meta * 1.2, 1);
+
+  // Compute effective meta (per-hospital for PDE)
+  let effectiveMeta = meta;
+  if (indKey === 'pde') {
+    const ind = INDICADORES_DEF['pde'];
+    effectiveMeta = (ind.metaByHosp && cod && ind.metaByHosp[cod]) || 3;
+  }
+  const metaForScale = (effectiveMeta !== null && effectiveMeta !== undefined) ? effectiveMeta : 10;
+
+  const minV = Math.min(...nonNull, invert ? 0 : metaForScale * 0.5);
+  const maxV = Math.max(...nonNull, invert ? metaForScale * 2.5 : metaForScale * 1.5, 1);
   const pad = 6;
   const xStep = (W - pad*2) / Math.max(serie.length - 1, 1);
 
   const toY = v => H - pad - ((v - minV) / (maxV - minV)) * (H - pad*2);
-  const metaY = toY(meta);
+  const metaY = toY(effectiveMeta !== null ? effectiveMeta : (meta || 0));
+  const metaLabel = indKey === 'pde' ? (effectiveMeta !== null ? effectiveMeta.toFixed(1) + ' d' : '—') : (meta !== null ? meta + '%' : '—');
 
   // Build polyline points
   const pts = serie.map((s, i) => s.valor !== null
@@ -942,7 +1037,7 @@ function buildSparkline(serie, indKey, meta, invert) {
 
   // Color of last known value
   const lastVal = [...vals].reverse().find(v => v !== null);
-  const sem = semaforo(lastVal, indKey);
+  const sem = semaforo(lastVal, indKey, null);
   const lineColor = sem === 'verde' ? 'var(--verde)' : sem === 'amarillo' ? 'var(--amarillo)' : 'var(--rojo)';
 
   // Dots
@@ -950,7 +1045,7 @@ function buildSparkline(serie, indKey, meta, invert) {
     if (s.valor === null) return '';
     const x = pad + i * xStep;
     const y = toY(s.valor);
-    const ds = semaforo(s.valor, indKey);
+    const ds = semaforo(s.valor, indKey, null);
     const dc = ds === 'verde' ? 'var(--verde)' : ds === 'amarillo' ? 'var(--amarillo)' : 'var(--rojo)';
     return `<circle cx="${x}" cy="${y}" r="3.5" fill="${dc}" stroke="var(--surface)" stroke-width="1.5">
       <title>${s.label}: ${fmtPct(s.valor)}</title>
@@ -965,10 +1060,7 @@ function buildSparkline(serie, indKey, meta, invert) {
   }).join('');
 
   return `<svg class="sparkline-svg" viewBox="0 0 ${W} ${H+24}" preserveAspectRatio="none">
-    <line x1="${pad}" y1="${metaY}" x2="${W-pad}" y2="${metaY}"
-      stroke="#4a5a70" stroke-width="1" stroke-dasharray="3,3"/>
-    <text x="${W-pad}" y="${metaY-2}" font-size="8" text-anchor="end"
-      fill="#1a2340" font-family="JetBrains Mono" font-weight="700">${meta}%</text>
+    ${(!isNaN(metaY) && effectiveMeta !== null) ? '<line x1="' + pad + '" y1="' + metaY + '" x2="' + (W-pad) + '" y2="' + metaY + '" stroke="#4a5a70" stroke-width="1.5" stroke-dasharray="4,3"/><text x="' + (W-pad) + '" y="' + (metaY-3) + '" font-size="9" text-anchor="end" fill="#1a2340" font-family="JetBrains Mono" font-weight="700">' + metaLabel + '</text>' : ''}
     ${pts.length > 1 ? `<polyline points="${pts.join(' ')}" fill="none" stroke="${lineColor}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
     ${dots}
     ${labels}
@@ -1035,7 +1127,7 @@ function buildCompArea(indKey, hospRows, indDef) {
       return (rvd && rvd.den > 0) ? rvd.num / rvd.den * 100 : null;
     });
 
-    var spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert);
+    var spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert, r.cod);
 
     // Delta vs aggregated ref
     var refTotalN = 0, refTotalD = 0;
@@ -1051,7 +1143,7 @@ function buildCompArea(indKey, hospRows, indDef) {
     var isWorse  = delta !== null && (indDef.invert ? delta > 0 : delta < 0);
     var dClass = delta === null ? 'delta-igual' : isBetter ? 'delta-mejor' : 'delta-peor';
     var arrow = delta === null ? '—' : delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
-    var dStr = delta !== null ? arrow + ' ' + Math.abs(delta).toFixed(1) + '%' : 'S/D';
+    var dStr = delta !== null ? arrow + ' ' + Math.abs(delta).toFixed(1) + (indKey === 'pde' ? ' d' : '%') : 'S/D';
     var actW = actPct !== null ? Math.min(actPct / scaleMax * 100, 100).toFixed(1) : 0;
     var refW = refPct !== null ? Math.min(refPct / scaleMax * 100, 100).toFixed(1) : 0;
 
@@ -1059,12 +1151,12 @@ function buildCompArea(indKey, hospRows, indDef) {
       + '<div class="dual-bar-row">'
       +   '<span class="dual-bar-tag">Act</span>'
       +   '<div class="dual-bar-track"><div class="dual-bar-fill ' + r.s + '" style="width:' + actW + '%"></div></div>'
-      +   '<span class="dual-bar-val act">' + fmtPct(actPct) + '</span>'
+      +   '<span class="dual-bar-val act">' + fmtPct(actPct, indKey) + '</span>'
       + '</div>'
       + '<div class="dual-bar-row">'
       +   '<span class="dual-bar-tag">Ref</span>'
       +   '<div class="dual-bar-track"><div class="dual-bar-fill ref" style="width:' + refW + '%"></div></div>'
-      +   '<span class="dual-bar-val ref">' + fmtPct(refPct) + '</span>'
+      +   '<span class="dual-bar-val ref">' + fmtPct(refPct, indKey) + '</span>'
       + '</div>'
       + '<div style="margin-top:3px;text-align:center;">'
       +   '<span class="delta-badge ' + dClass + '">' + dStr + '</span>'
@@ -1076,7 +1168,7 @@ function buildCompArea(indKey, hospRows, indDef) {
       + '<div class="chart-wrap">' + spark + '</div>'
       + '<div style="padding:4px 0;">' + compCol + '</div>'
       + '<div class="hosp-result">'
-      +   '<div class="result-pct ' + r.s + '">' + fmtPct(r.ag.pct) + '</div>'
+      +   '<div class="result-pct ' + r.s + '">' + fmtPct(r.ag.pct, indKey) + '</div>'
       +   '<div class="result-numden">' + r.ag.num + ' / ' + r.ag.den + '</div>'
       +   '<div class="result-sem"><div class="sem-badge ' + r.s + '"></div></div>'
       + '</div>'
@@ -1093,7 +1185,7 @@ function buildHospRows(indKey, hospRows, indDef) {
   _lastHospRows[indKey] = hospRows;
   var out = '';
   hospRows.forEach(function(r, i) {
-    var spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert);
+    var spark = buildSparkline(r.serie, indKey, indDef.meta, indDef.invert, r.cod);
     var pctLabel = filtros.periodos.length > 1
       ? '<div style="font-size:9px;color:var(--text-dim);margin-top:2px;">Acumulado ' + filtros.periodos.length + ' meses</div>'
       : '';
@@ -1101,7 +1193,7 @@ function buildHospRows(indKey, hospRows, indDef) {
       + '<div class="hosp-name-cell">' + r.hosp.nombre + '</div>'
       + '<div class="chart-wrap">' + spark + '</div>'
       + '<div class="hosp-result">'
-      +   '<div class="result-pct ' + r.s + '">' + fmtPct(r.ag.pct) + '</div>'
+      +   '<div class="result-pct ' + r.s + '">' + fmtPct(r.ag.pct, indKey) + '</div>'
       +   '<div class="result-numden">' + r.ag.num + ' / ' + r.ag.den + '</div>'
       +   pctLabel
       +   '<div class="result-sem"><div class="sem-badge ' + r.s + '"></div></div>'
@@ -1134,7 +1226,7 @@ function render() {
       if (!ag) continue; // Ocultar hospitales sin datos
 
       const serie = serieTemporal(indKey, cod);
-      const s = semaforo(ag.pct, indKey);
+      const s = semaforo(ag.pct, indKey, cod);
       hospRows.push({ cod, hosp, ag, serie, s });
     }
 
@@ -1151,8 +1243,8 @@ function render() {
     // Compute service total
     let totalNum = 0, totalDen = 0;
     hospRows.forEach(r => { totalNum += r.ag.num; totalDen += r.ag.den; });
-    const totalPct = totalDen > 0 ? totalNum / totalDen * 100 : null;
-    const totalSem = semaforo(totalPct, indKey);
+    const totalPct = totalDen > 0 ? calcPct(totalNum, totalDen, indKey) : null;
+    const totalSem = semaforo(totalPct, indKey, null);
     const totalSemColor = totalSem==='verde'?'var(--verde)':totalSem==='amarillo'?'var(--amarillo)':totalSem==='rojo'?'var(--rojo)':'var(--text-dim)';
 
     const cardId = `card-${indKey}`;
@@ -1184,7 +1276,7 @@ function render() {
             <div style="display:flex;align-items:center;gap:14px;">
               <div style="text-align:right;">
                 <div style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;">Total Servicio</div>
-                <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.02em;color:${totalSemColor}" id="total-hdr-${indKey}">${fmtPct(totalPct)}</div>
+                <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.02em;color:${totalSemColor}" id="total-hdr-${indKey}">${fmtPct(totalPct, indKey)}</div>
               </div>
               <div style="width:1px;height:32px;background:var(--border2);"></div>
               <div class="ind-meta">Meta: <span>${indDef.metaLabel}</span> · ${indDef.fuente} · <span style="color:var(--text-muted)">${periodTxt}</span></div>
@@ -1208,7 +1300,7 @@ function render() {
           <div class="chart-wrap"></div>
           ${compState.active[indKey] ? '<div></div>' : ''}
           <div class="total-result">
-            <div class="total-pct ${totalSem}">${fmtPct(totalPct)}</div>
+            <div class="total-pct ${totalSem}">${fmtPct(totalPct, indKey)}</div>
             <div class="total-numden">${totalNum} / ${totalDen}</div>
             <div style="font-size:9px;color:var(--text-dim);margin-top:3px;">${filtros.periodos.length > 1 ? 'Acumulado '+filtros.periodos.length+' meses' : periodLabel(filtros.periodos[0])||''}</div>
           </div>
@@ -1348,7 +1440,7 @@ render();function _refreshCompView(indKey, hospRows) {
     var better = delta !== null && (indDef.invert ? delta < 0 : delta > 0);
     var dClass = delta === null ? 'delta-igual' : better ? 'delta-mejor' : 'delta-peor';
     var arrow  = delta === null ? '—' : delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
-    var dStr   = delta !== null ? arrow + ' ' + Math.abs(delta).toFixed(1) + '%' : 'S/D';
+    var dStr   = delta !== null ? arrow + ' ' + Math.abs(delta).toFixed(1) + (indKey === 'pde' ? ' d' : '%') : 'S/D';
     var actW   = actPct !== null ? Math.min(actPct / scaleMax * 100, 100).toFixed(1) : 0;
     var refW   = refPct !== null ? Math.min(refPct / scaleMax * 100, 100).toFixed(1) : 0;
 
@@ -1360,12 +1452,12 @@ render();function _refreshCompView(indKey, hospRows) {
       + '<div class="dual-bar-row">'
       +   '<span class="dual-bar-tag">Act</span>'
       +   '<div class="dual-bar-track"><div class="dual-bar-fill ' + r.s + '" style="width:' + actW + '%"></div></div>'
-      +   '<span class="dual-bar-val act">' + fmtPct(actPct) + '</span>'
+      +   '<span class="dual-bar-val act">' + fmtPct(actPct, indKey) + '</span>'
       + '</div>'
       + '<div class="dual-bar-row">'
       +   '<span class="dual-bar-tag">Ref</span>'
       +   '<div class="dual-bar-track"><div class="dual-bar-fill ref" style="width:' + refW + '%"></div></div>'
-      +   '<span class="dual-bar-val ref">' + fmtPct(refPct) + '</span>'
+      +   '<span class="dual-bar-val ref">' + fmtPct(refPct, indKey) + '</span>'
       + '</div>'
       + '<div style="margin-top:3px;text-align:center;">'
       +   '<span class="delta-badge ' + dClass + '">' + dStr + '</span>'
