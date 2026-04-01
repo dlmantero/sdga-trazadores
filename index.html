@@ -386,11 +386,140 @@ select.filter-select:focus{border-color:var(--accent);}
   font-family:'JetBrains Mono',monospace;font-style:italic;
 }
 
+
+/* ── TABLET (≤900px) ── */
 @media(max-width:900px){
   .sidebar{display:none;}
-  .summary-strip{grid-template-columns:1fr 1fr;}
-  .hosp-grid{grid-template-columns:1fr 80px;}
-  .chart-wrap{display:none;}
+  .summary-strip{grid-template-columns:1fr 1fr;gap:8px;}
+  .main{padding:16px;}
+  .hosp-grid{grid-template-columns:150px 1fr 90px;gap:10px;}
+  .hosp-grid.comp-mode{grid-template-columns:120px 1fr 120px 80px;}
+  .total-row{grid-template-columns:150px 1fr 90px;}
+  .chart-wrap{height:120px;}
+  .ind-card-header{flex-wrap:wrap;gap:10px;}
+  .ind-header-right{flex-wrap:wrap;gap:6px;}
+}
+
+/* ── MOBILE (≤600px) ── */
+@media(max-width:600px){
+  /* Header */
+  header{height:auto;padding:8px 12px;flex-wrap:wrap;gap:6px;}
+  .brand img{height:34px;}
+  .brand-title{font-size:13px;}
+  .brand-sub{display:none;}
+  .header-right .sync-txt{display:none;}
+  .btn-cfg{font-size:11px;padding:5px 8px;}
+
+  /* Layout */
+  .page{flex-direction:column;}
+  .main{padding:10px 10px 80px;}
+
+  /* Summary strip */
+  .summary-strip{grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;}
+  .scard{padding:10px 12px;}
+  .scard-value{font-size:22px;}
+  .scard-label{font-size:9px;}
+  .scard-sub{font-size:10px;}
+
+  /* Section header */
+  .eje-header{margin-bottom:10px;}
+  .eje-title{font-size:15px;}
+
+  /* Indicator cards */
+  .ind-card{border-radius:6px;margin-bottom:10px;}
+  .ind-card-header{padding:12px 14px;flex-wrap:wrap;gap:8px;}
+  .ind-header-left{width:100%;}
+  .ind-code{font-size:9px;}
+  .ind-name{font-size:13px;}
+  .ind-formula{font-size:9px;}
+  .ind-header-right{width:100%;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+  .comp-toggle{font-size:10px;padding:3px 8px;}
+  .chevron{margin-left:auto;}
+
+  /* Hospital rows — stack vertically */
+  .hosp-grid{
+    grid-template-columns:1fr auto;
+    grid-template-rows:auto auto;
+    gap:6px 8px;
+    padding:12px 14px;
+  }
+  .hosp-name-cell{
+    grid-column:1;grid-row:1;
+    font-size:12px;font-weight:600;
+  }
+  .hosp-result{
+    grid-column:2;grid-row:1;
+    text-align:right;
+  }
+  .result-pct{font-size:18px;}
+  .result-numden{font-size:9px;}
+  .chart-wrap{
+    grid-column:1/-1;grid-row:2;
+    height:90px;
+  }
+
+  /* Total row */
+  .total-row{
+    grid-template-columns:1fr auto;
+    padding:10px 14px;gap:8px;
+  }
+  .total-row .chart-wrap{display:none;}
+  .total-pct{font-size:20px;}
+
+  /* Comp header bar */
+  .comp-header-bar{flex-wrap:wrap;gap:6px;padding:8px 12px;}
+  .comp-sel{font-size:11px;padding:3px 6px;}
+
+  /* Dual bar comparator */
+  .hosp-grid.comp-mode{
+    grid-template-columns:1fr auto;
+    grid-template-rows:auto auto auto;
+  }
+  .comp-col-inline{
+    grid-column:1/-1;grid-row:3;
+    min-width:unset;
+  }
+  .dual-bar-tag{font-size:10px;}
+  .dual-bar-val{font-size:10px;}
+  .delta-badge{font-size:11px;}
+
+  /* Semaphore pills */
+  .sm-pill{font-size:10px;padding:2px 6px;}
+  .instrumento-badges{gap:3px;}
+  .inst-badge{font-size:8px;padding:2px 5px;}
+
+  /* Period buttons */
+  .period-grid{grid-template-columns:1fr 1fr;}
+  .period-btn{font-size:11px;padding:5px 6px;}
+
+  /* Footer */
+  footer{padding:6px 12px;flex-wrap:wrap;gap:6px;font-size:10px;}
+
+  /* Sidebar — show as bottom drawer on mobile */
+  .sidebar-mobile-btn{
+    display:flex;position:fixed;bottom:16px;right:16px;
+    background:var(--navy);color:#fff;border:none;
+    width:48px;height:48px;border-radius:50%;
+    font-size:20px;align-items:center;justify-content:center;
+    cursor:pointer;z-index:300;box-shadow:0 4px 16px rgba(37,48,107,0.3);
+  }
+  .sidebar{
+    display:block;position:fixed;bottom:0;left:0;right:0;
+    height:auto;max-height:70vh;overflow-y:auto;
+    z-index:250;transform:translateY(100%);
+    transition:transform .3s ease;
+    border-top:2px solid var(--navy);border-right:none;
+    border-radius:16px 16px 0 0;
+    padding:16px 16px 32px;
+    box-shadow:0 -4px 24px rgba(37,48,107,0.15);
+    width:100%;
+  }
+  .sidebar.open{transform:translateY(0);}
+  .sidebar-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);
+    z-index:240;
+  }
+  .sidebar-overlay.open{display:block;}
 }
 </style>
 </head>
@@ -411,6 +540,8 @@ select.filter-select:focus{border-color:var(--accent);}
     <button class="btn-cfg" onclick="openModal()">⚙ Fuente de datos</button>
   </div>
 </header>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<button class="sidebar-mobile-btn" id="sidebarBtn" onclick="toggleSidebar()" title="Filtros" style="display:none;">☰</button>
 
 <div class="page">
 
@@ -1368,6 +1499,29 @@ function showToast(msg, tipo) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+
+// ── MOBILE SIDEBAR ──
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+function initMobile() {
+  const btn = document.getElementById('sidebarBtn');
+  if (!btn) return;
+  const isMobile = window.matchMedia('(max-width:600px)').matches;
+  btn.style.display = isMobile ? 'flex' : 'none';
+  window.matchMedia('(max-width:600px)').addEventListener('change', e => {
+    btn.style.display = e.matches ? 'flex' : 'none';
+    if (!e.matches) closeSidebar();
+  });
+}
+document.addEventListener('DOMContentLoaded', initMobile);
+initMobile();
 
 // ═══════════════════════════════════════════
 // INIT
